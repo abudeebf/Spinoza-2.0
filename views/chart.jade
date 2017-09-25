@@ -1,0 +1,58 @@
+extends layout
+block content
+
+		script(src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.min.js")
+		script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+
+		script(src="/javascripts/jquery.datetimepicker.js")
+		script(src="/javascripts/main.js")
+
+		script(type='text/javascript').
+			$(document).ready(function(){
+				var minutes=!{ JSON.stringify(minutes)}.map(Number);
+				var pressrunarray=!{ JSON.stringify(pressrunarray)}.map(Number);
+				
+				var csdarray=!{JSON.stringify(csdarray) }.map(Number);
+				
+				var comulativesolvedarray=!{JSON.stringify(comulativesolvedarray) }.map(Number);
+				var canvas1 = $('<canvas/>', { id: 'mycanvas', height: 500, width: 500});
+				canvas1.css('border', 'solid 1px red');
+				$('body').append(canvas1); 
+
+				var myChart = new Chart(canvas1, {
+				type: 'line',
+				data: {
+				labels: minutes,
+				datasets: [{
+				label: 'Students who started the problem',
+				data:pressrunarray ,
+				backgroundColor:"rgba(255,0,0,0.2)"
+				},
+				{
+				label: 'all students who solve the problem',
+				data:comulativesolvedarray ,
+				backgroundColor: "rgba(0,255,0,0.4)"
+				},
+				{
+				label: 'Students who debug the problem',
+				data:csdarray ,
+				backgroundColor:"rgba(0,0,255,0.8)"
+
+				}
+				
+				]
+				}
+				});
+				$('#datetimepicker_mask').datetimepicker({
+					timepicker:true,
+					format:'m/d/y'
+
+				});
+
+			});
+
+		p="Engagment graph for " 
+		label choose the date
+		input(name="startTime",style='margin-left:5px',type="text" value="#{date}" id="datetimepicker_mask")
+		button(onClick="engagment(\"#{pid}\")", class="btn btn-primary btn-sm", style="margin-left:5px") Refersh graph
+	

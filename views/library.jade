@@ -1,0 +1,53 @@
+extends layout
+block content
+  script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+  script(src="/javascripts/main.js")
+  script(src="/socket.io/socket.io.js")
+  script(src="/javascripts/user-script.js")
+  script(src="/javascripts/stat-script.js")
+  script(type='text/javascript').
+      $(document).ready(function(){
+        $("ul").filter('.nav.navbar-nav').append('<li><a href="/classes/problems/#{classId}/#{problemsetId}">Back to problem set</li>');
+      })
+  
+  div.container
+      div(class="row")
+        div(class="col-sm-3 col-md-2 sidebar")
+          ul(class="nav nav-sidebar")
+              li 
+                 h5(class="text-success") Welcome #{user.name}
+              li
+                 h5(class="text-danger")  Currently connected
+              li 
+                 h5(class="text-success",id="connections",style="margin-left:20px" )
+              li 
+                a(href="/addTA") Add new TA
+              li 
+               a(href="/logout") Not you logout
+        div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
+          h3.
+                Problems Library
+          div(id="inst",name="inst")
+          input(type="hidden" value= "#{inst}" id="instruction")     
+          div
+            Table(class="table table-bordered table-condensed")
+               if (problems.length >0)
+                  each problem , i in problems
+                         tr
+                            td
+                               a(href="/#{problem._id}")= "" + problem.pname
+                            td
+                               p=problem.creator
+                            td 
+                               p= problem.Description
+                            td
+                            
+                              a(onClick='copyToPs(\"#{problem._id}\",\"#{classId}\",\"#{problemset}\")', class="btn btn-primary btn-sm")= "Add to this problem set"
+                           
+
+                           
+
+               else 
+                    p You did not add problems yet
+
+                          

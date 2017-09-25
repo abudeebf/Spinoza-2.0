@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html>
+<title>Spinoza</title>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/doc/doc_brython.css">
+
+<link rel="stylesheet" href="/console.css">
+<link href='/bootstrap-3.0.0/dist/css/bootstrap.css', rel='stylesheet'>
+<link href='/bootstrap-3.0.0/examples/starter-template/starter-template.css', rel='stylesheet'>
+<script src='/bootstrap-3.0.0/assets/js/html5shiv.js'></script>
+
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/javascripts/bootstrap.js"></script>
+<script src="/javascripts/bootstrap.min.js"></script>
+<script src="/javascripts/jsdiff.js"></script>
+
+<script src="/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="/ace/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+<script src="/ace/mode-python3.js" type="text/javascript" charset="utf-8"></script>
+<script src="/ace/snippets/python.js" type="text/javascript" charset="utf-8"></script>
+
+
+<script type="text/javascript" src="/src/brython_builtins.js"></script>
+<script type="text/javascript" src="/src/version_info.js"></script>
+<script type="text/javascript" src="/src/py2js.js"></script>
+<script type="text/javascript" src="/src/py_object.js"></script>
+<script type="text/javascript" src="/src/py_type.js"></script>
+<script type="text/javascript" src="/src/py_utils.js"></script>
+<script type="text/javascript" src="/src/py_builtin_functions.js"></script>
+<script type="text/javascript" src="/src/py_exceptions.js"></script>
+<script type="text/javascript" src="/src/py_range_slice.js"></script>
+<script type="text/javascript" src="/src/py_bytes.js"></script>
+<script type="text/javascript" src="/src/py_set.js"></script>
+<script type="text/javascript" src="/src/js_objects.js"></script>
+<script type="text/javascript" src="/src/stdlib_paths.js"></script>
+<script type="text/javascript" src="/src/py_import.js"></script>
+
+<script type="text/javascript" src="/src/py_string.js"></script>
+<script type="text/javascript" src="/src/py_int.js"></script>
+<script type="text/javascript" src="/src/py_long_int.js"></script>
+<script type="text/javascript" src="/src/py_float.js"></script>
+<script type="text/javascript" src="/src/py_complex.js"></script>
+<script type="text/javascript" src="/src/py_dict.js"></script>
+<script type="text/javascript" src="/src/py_list.js"></script>
+<script type="text/javascript" src="/src/py_generator.js"></script>
+<script type="text/javascript" src="/src/py_dom.js"></script>
+
+<script type="text/javascript" src="/src/builtin_modules.js"></script>
+<script type="text/javascript" src="/src/py_import_hooks.js"></script>
+<script type="text/javascript" src="/src/async.js"></script>
+<!-- Javascript code needed to run tests included in dom.py -->
+
+
+<script type="text/python3" id="tests">
+import time
+import sys
+import traceback
+import dis
+import json
+
+from javascript import JSObject, console
+from browser import document as doc, window, alert, console, prompt
+from browser import timer
+from browser import editor, brython_test_utils as utils
+from browser.local_storage import storage
+ 
+
+
+
+script_num = -1
+failed = []
+t_start = None
+x=0
+_jquery=JSObject(window.jQuery)
+def run():
+	global output
+	doc["console"].value = ''
+	_jquery('#tabs a[href="#tab2"]').tab('show');
+	src = editor.editor.getValue()
+	if storage is not None:
+		storage["py_src"] = src
+
+	state, t0, t1, _ = utils.run(src)
+	output = doc["console"].value
+	if(state==1):
+		doc['console'].value=''
+		sol=_jquery('#sol').val();
+		unitTest=_jquery('#unitTest1').val();
+		if(len(sol.strip())>0 and len(unitTest.strip())>0 ):
+			w=createUnitTest(output);
+			if(w==0):
+				doc['console'].value=output;
+			else:
+				_jquery.post(_jquery('#host').val()+"addsoultiontoproblem",{'pid':_jquery('#pid').val(), 'sol':src,'result':"",'percentage':0,"stdout":doc['console'].value,"compliererror":"false",'stderr':""});
+	else:
+		_jquery.post(_jquery('#host').val()+"addsoultiontoproblem",{'pid':_jquery('#pid').val(), 'sol':src,'result':"",'percentage':0,"stdout":doc['console'].value,"compliererror":"true",'stderr':""});
+	
+	print('<completed in %6.2f ms>' % ((t1 - t0) * 1000.0))
+	return state
+
+
+
+             
+
+
+
+def fixedTest(runFixedCode,output,retype):
+	
+	state, t0, t1, _ = utils.run(runFixedCode)
+	if(state==1):
+		testResult=doc['console'].value.split('===/=ResUltHey==/=')[1];
+		testresults=testResult.split("^^^(^^");
+		if(retype=="on"):
+			range1=3
+		else:
+			range1=4
+		testSize=(len(testresults)-1)/range1
+		if(len(testresults)>0):
+			count=0;
+			result=[]
+			for i in range(0, len(testresults)-1, range1):
+				if(testresults[i+1]==testresults[i+2]):
+					count=count+1;
+				result.append(testresults[i+1])
+			if(count==testSize):
+				percentage=100
+			else:
+				percentage=count/testSize*100
+			_jquery.post(_jquery('#host').val()+"addsoultiontoproblem",{'pid':_jquery('#pid').val(), 'sol':editor.editor.getValue(),'result':str(result),'percentage':percentage,"stdout":output,"compliererror":"false",'stderr':""});
+			
+
+	else:
+		state = 0
+	
+	return state	
+def returnTest(pNumbers,methodname):
+	
+	add="\n\ttestSize=len(testvalues);"
+	add=add+"\n\tfor i in range(0,testSize):\n\t\t"
+	add=add+"\n\t\tvalue1="+methodname;
+	if(pNumbers==1):
+		parmeters="(testvalues[i]"
+		printPar="print(str(testvalues[i])"
+	else:
+		parmeters="(testvalues[i][0]"
+		printPar="print(str(testvalues[i][0])"
+		for j in range(1,pNumbers):
+			parmeters=parmeters+",testvalues[i]["+str(j)+"]"
+			printPar=printPar+"+\", \"+str(testvalues[i]["+str(j)+"])" 
+	parmeters=parmeters+")"
+	add=add+parmeters+"\n\t\tvalue2=solution"+parmeters
+
+	add=add+"\n\t\tmatch=value1==value2"
+	add=add+"\n\t\tif(match):\n\t\t\tcount=count+1\n\t\t"
+	printPar=printPar+"+\"^^^(^^\"+str(value1)+\"^^^(^^\"+str(value2)+\"^^^(^^\"+str(match)+\"^^^(^^\")"
+	add=add+printPar;
+	add=add+"\n\tif(count==testSize):\n\t\tprint(\"Passed All Test\")\n\telse:\n\t\tprint( str(count)+\" from \"+str(testSize)+\" Tests Passed \" );\ncheck()"
+	return add;
+
+def voidTest(pNumbers,methodname):
+	add="\n\ttestSize=len(testvalues);"
+	add=add+"\n\tfor i in range(0,testSize):\n\t\t"
+	if(pNumbers==1):
+		parmeters="(testvalues[i]"
+		printPar="print(str(testvalues[i])"
+	else:
+		parmeters="(testvalues[i][0]"
+		printPar="print(str(testvalues[i][0])"
+		for j in range(1,pNumbers):
+			parmeters=parmeters+",testvalues[i]["+str(j)+"]"
+			printPar=printPar+"+\", \"+str(testvalues[i]["+str(j)+"])"
+	add=add+printPar+")\n\t\tprint(\"^^^(^^\")";
+	add=add+"\n\t\t"+methodname;    
+	parmeters=parmeters+")"
+	add=add+parmeters+"\n\t\tprint(\"^^^(^^\")\n\t\tsolution"+parmeters+"\n\t\tprint(\"^^^(^^\")\ncheck()"
+	return add;
+
+def save():
+	_jquery.post(_jquery('#host').val()+"saveproblem",{'pid':_jquery('#pid').val(), 'sol':editor.editor.getValue()});
+def getText():
+	doc["code"].value=editor.editor.getValue()
+
+def createUnitTest(output):
+		runcode="";
+		src=editor.editor.getValue()
+		sol=_jquery('#sol').val();
+		pNumbers=int(_jquery('#pNumbers').val());
+		unitTest=_jquery('#unitTest1').val();
+		randomClass="class Random:\n\tdef __init__(self, seed):\n\t\tself.seed=seed;\n\t\tself.m=2**32;\n\t\tself.a=1103515245;\n\t\tself.c = 12345;\n\tdef randInt(self,lo,hi):\n\t\tseed = (self.a * self.seed + self.c) % self.m;\n\t\trange=hi-lo+1;\n\t\tself.seed+=1;\n\t\treturn int(seed % range + lo);\n\tdef randDouble(self):\n\t\tseed = (self.a * self.seed + self.c) % self.m;\n\t\tself.seed+=1;\n\t\treturn (seed/self.m)\n\tdef randBol(self):\n\t\tif(self.randDouble()>.5):\n\t\t\treturn True;\n\t\telse:\n\t\t\treturn False;"
+		
+		methodname=_jquery('#methodname').val();
+		retype=_jquery('#retype').val();
+		runcode= randomClass+"\n"+unitTest+"\n"+src +"\n" +sol +"\n";
+		seed=str(time.time());
+		add="def check():\n\ttestvalues=unitTest("+seed+");\n\tcount=0;\n\tprint(\"===/=ResUltHey==/=\");\n\t"
+		addfixed="def check():\n\ttestvalues=unitTest(200);\n\tcount=0;\n\tprint(\"===/=ResUltHey==/=\");\n\t"
+		if(retype=="on"):
+			v=voidTest(pNumbers,methodname)
+			add=add+v
+			addfixed=addfixed+v;
+		else:
+			returnm=returnTest(pNumbers,methodname)
+			add=add+returnm
+			addfixed=addfixed+returnm
+
+		runFixedCode=runcode+addfixed
+		runcode=runcode+add;
+		m=fixedTest(runFixedCode,output,retype)
+		if(m==0):
+			result=[]
+			result.append(str(doc['console'].value))
+			if(doc['console'].value.find("NameError: solution")>-1):
+				doc['console'].value="run time error in Testing\n"+ "please name the solution method def solution\n"
+				_jquery.post(_jquery('#host').val()+"addsoultiontoproblem",{'pid':_jquery('#pid').val(), 'sol':editor.editor.getValue(),'result':"runtime error",'percentage':0,"stdout":"","compliererror":"false",'stderr':" run time error in Testing\n wrong in naming soultion function"});
+			else:
+				doc['console'].value="run time error in Testing\n"+ doc['console'].value[doc['console'].value.index("Traceback (most recent call last)"):]
+				_jquery.post(_jquery('#host').val()+"addsoultiontoproblem",{'pid':_jquery('#pid').val(), 'sol':editor.editor.getValue(),'result':"runtimeerror",'percentage':0,"stdout":"","compliererror":"false",'stderr':"run time error in Testing\n"});
+			showError=1
+			_jquery('#tabs a[href="#tab2"]').tab('show');
+		else:
+			showError=0
+			doc['console'].value=""
+			state, t0, t1, _ = utils.run(runcode);
+			testResult=doc['console'].value.split('===/=ResUltHey==/=')[1];
+			testresults=testResult.split("^^^(^^");
+			if(len(testresults)>0):
+
+				name="mytable"
+				if(_jquery("#" + name).length > 0): 
+					_jquery("#" + name).remove();
+               
+				table = _jquery('<table id =' + name + '></table>').addClass("table-bordered table");
+				row = _jquery('<tr></tr>').addClass("badge-warning");
+				row.append(_jquery('<th></th>').text("parameters"));
+				row.append( _jquery('<th></th>').text("result"));
+				row.append( _jquery('<th></th>').text("expected"));
+				row.append(_jquery('<th></th>').text("match"));
+				row.append(_jquery('<th></th>').text("comment"));
+				table.append(row);
+				if (retype !="on"):
+					for i in range(0, len(testresults)-1, 4):
+						if(testresults[i+3].strip()=='False'):
+							row=_jquery('<tr></tr>').addClass("alert-danger");
+						else:
+							row=_jquery('<tr></tr>').addClass("success");
+						for n in range(0, 4):
+							row.append(_jquery('<td></td>').html(testresults[i+n].replace("\n", "<br />")));
+							if (n==3):
+								if(testresults[i+3].strip()=='False'):
+									if(testresults[i+1][len(testresults[i+1])-1]==("\n") and testresults[i+2][len(testresults[i+2])-1]!=("\n")):
+										row.append(_jquery('<td></td>').text( " [expected contains \\n] at the end "));
+									elif (testresults[i+1][len(testresults[i+1])-1]!=("\n") and testresults[i+2][len(testresults[i+2])-1]==("\n")):
+										row.append(_jquery('<td></td>').text( " [expected does not contains \\n] at the end "));
+									elif (testresults[i+1][len(testresults[i+1])-1]==" " and testresults[i+2][len(testresults[i+2])-1]!=" "):
+										row.append(_jquery('<td></td>').text( " [[expected contains]] \"\" at the end"));
+									elif (testresults[i+1][len(testresults[i+1])-1]!=" " and testresults[i+2][len(testresults[i+2])-1]==" "):
+										row.append(_jquery('<td></td>').text( " [[expected does not contains]] \"\" at the end"));
+									else:
+										row.append(_jquery('<td></td>').text(" not the same"));
+								else:
+									row.append(_jquery('<td></td>').text(""));
+						table.append(row);
+					row = _jquery('<tr></tr>').addClass("badge-warning");
+					row.append(_jquery('<td colspan="5"></td>').text(testresults[len(testresults)-1]));
+					table.append(row);
+				else:
+					count=0;
+				    
+					for i in range(0, len(testresults)-1, 3):
+						if(testresults[i+1]!=testresults[i+2]):
+							row=_jquery('<tr></tr>').addClass("alert-danger");
+							flag=False;
+						else:
+							row=_jquery('<tr></tr>').addClass("success");
+							flag=True
+							count=count+1;
+						for n in range(0, 3):
+							
+							row.append(_jquery('<td></td>').html(testresults[i+n].replace("\n", "<br />")));
+							if (n==2):
+								row.append(_jquery('<td></td>').html(str(flag)));
+								if(flag==False):
+									if(testresults[i+1][len(testresults[i+1])-1]==("\n") and testresults[i+2][len(testresults[i+2])-1]!=("\n")):
+										row.append(_jquery('<td></td>').text( " [expected contains \\n] at the end "));
+									elif (testresults[i+1][len(testresults[i+1])-1]!=("\n") and testresults[i+2][len(testresults[i+2])-1]==("\n")):
+										row.append(_jquery('<td></td>').text( " [expected does not contains \\n] at the end "));
+									elif (testresults[i+1][len(testresults[i+1])-1]==" " and testresults[i+2][len(testresults[i+2])-1]!=" "):
+										row.append(_jquery('<td></td>').text( " [[expected contains]] \"\" at the end"));
+									elif (testresults[i+1][len(testresults[i+1])-1]!=" " and testresults[i+2][len(testresults[i+2])-1]==" "):
+										row.append(_jquery('<td></td>').text( " [[expected does not contains]] \"\" at the end"));
+									else:
+										row.append(_jquery('<td></td>').text(" not the same"));
+								else:
+									row.append(_jquery('<td></td>').text(""));
+						table.append(row);
+					row = _jquery('<tr></tr>').addClass("badge-warning");
+					if(count==len(testresults)):
+						row.append(_jquery('<td colspan="5"></td>').text("All Test Passed"));
+					else: 
+						row.append(_jquery('<td colspan="5"></td>').text("Only " + str(count) +" from "+str((len(testresults)-1)/3) +" Passed" ));
+					table.append(row); 
+				_jquery("#tester").append(table);
+				_jquery('#tabs a[href="#tab3"]').tab('show');
+                
+		return showError
+__BRYTHON__.loop_timeout = 2
+# bindings
+doc['run'].bind('click',lambda ev:run())
+
+doc['pydesc'].innerHTML=_jquery('#desc').val()
+editor.editor.setValue(_jquery('#code').val())
+timer.set_interval(getText,1);
+doc['Studentinfo'].innerHTML="You are viewing the soultion of " + _jquery('#studentname').val()
+
+</script>
+<script type="text/javascript">
+  var solutions=!{JSON.stringify(solutions)};
+ function anotherV(){
+	var previous=Number($('#countversion').val());
+	var cv=Number($('#countversion').val());
+	if (cv==solutions.length || (cv+1)==solutions.length){
+	cv=0;
+	previous=solutions.length-1;
+	}
+
+
+
+	else{
+	previous=cv;
+	cv=cv+1;
+	}
+	document.getElementById("differencelabel").innerHTML="diff between version # "+ (previous+1) +" and version # " +(cv+1)
+	document.getElementById("diffcode").innerHTML=diffString(solutions[previous],solutions[cv]);
+	document.getElementById("countversion").value=cv;
+	document.getElementById("sequence").innerHTML=cv+1 +"/"+solutions.length;
+	document.getElementById("code2").value=solutions[cv];
+ }
+</script>
+
+</head>
+
+<body onload="brython({debug:1, cache:'none', static_stdlib_import:true})">
+<nav class=" navbar navbar-inverse navbar-fixed-top" data-options="region:'north'">
+		<div class="container">
+				<div class="navbar-header">
+					<a class="navbar-brand" href='/profile'>Spinoza</a>
+				</div>
+				<ul class="nav navbar-nav">
+					<li ><a href="/pythonide">Python IDE</a></li>
+					<li ><a href="/summary/submission/<%=classId%>/<%=problem1._id%>">View Submission </a></li>
+					<li ><a href="/classes/problems/<%=classId%>">View problem sets</a></li>    
+				</ul>
+			</div>
+		</nav>
+
+<div style="text-align:center">
+<br>
+</div>
+</center>
+
+
+<div id="container">
+<div id="left-div">
+  <div id="editor" style="width:100% ;height:100%;"></div>
+</div>
+<div id="right-div">
+<div id="Studentinfo" style="border:thin solid #000000;padding-left:5px;background:#C0C0C0;width:98%;height:5%; font-family: Verdana, Geneva, sans-serif;
+				font-size:16px" readonly> </div>
+<hr>
+<button id="run"class="btn btn-primary ">run</button>
+  
+
+
+<div class="tabbable"style="width:100%;height:95%;" id="tabs"> <!-- Only required for left/right tabs -->
+  <ul class="nav nav-tabs">
+	 <li class="active"><a href="#tab1" data-toggle="tab">Description</a></li>
+	 <li><a href="#tab2" data-toggle="tab">Output</a></li>
+	 <li><a href="#tab3" data-toggle="tab">Unit Test</a></li>
+	  <li><a href="#tab4" data-toggle="tab">History</a></li>
+  </ul>
+  <div class="tab-content" style="width:100%;height:95%;">
+	<div class="tab-pane active" id="tab1" style="width:100%;height:95%;">
+	<div id="pydesc" style="border:thin solid #000000;padding-left:5px;background:#FFFFE0;width:95%;height:95%; font-family: Verdana, Geneva, sans-serif;
+				font-size:16px" readonly> </div>
+	</div>
+	<div class="tab-pane " id="tab2"style="width:100%;height:95%;" >
+	 <textarea id="console" autocomplete="off" style="font-family:monospace;"></textarea>
+	</div>
+	<div class="tab-pane" id="tab3">
+	 <div id='tester'style="background:white;"></div>
+	</div>
+	<div class="tab-pane" id="tab4"style="width:100%;height:95%;">
+		<div id='history'style="background:white;">
+		<% if (solutions!= undefined) { %>
+		     <label id="sequence" > <%=solutionscount +"/"+solutionscount  %></label>
+		     
+		     <br>
+		     <button id="showAnotherVersion" onClick="anotherV()"> Show next version</button>
+		     <br>
+		     <div id="differencelabel"></div>
+		     <div id="difference"></div>
+		     <pre id="diffcode"> </pre>
+		    <% } %>
+		</div>
+    </div>
+                               
+</div>
+</div>
+  </div>
+  
+  </div>
+</div>
+</div>
+<input type="hidden" value= "<%= sol%>"id="code">
+<input type="hidden" value= "<%= problem1.test_generator%>"id="unitTest1">
+<input type="hidden" value= "<%= problem1.sol%>"id="sol">
+<input type="hidden" value= "<%= problem1.pNumbers%>"id="pNumbers">
+<input type="hidden" value= "<%= problem1.methodname%>"id="methodname">
+<input type="hidden" value= "<%= problem1.retype%>"id="retype">
+<input type="hidden" value= "<%= problem1._id%>"id="pid">
+<input type="hidden" value= "<%= host%>"id="host">
+<input type="hidden" value= "<%= problem1.Description %>"id="desc">
+<input type="hidden" value= "<%= studentname %>"id="studentname">
+<input type="hidden" value= "<%= semail %>"id="semail">
+<input type="hidden" value= "<%= solutions %>" id="solutions">
+
+</body>
+</html>
+

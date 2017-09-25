@@ -1,0 +1,37 @@
+extends layout
+block content
+  script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+  script(src="/javascripts/main.js")
+  script(type='text/javascript').
+    $(document).ready(function(){
+         setInterval(function() { 
+             location.reload();
+
+            }, 10000);
+
+        });
+  
+  div.container
+    div(class="page-header text-center")
+        a(href="/problems" ,class="btn btn-default btn-sm") Back
+        a(href="/logout" ,class="btn btn-default btn-sm") Not you logout
+           
+      h3.
+       #{ pname } Submission List
+      Table(class="table  table-bordered table-condensed")
+        tr
+           td solution id 
+           td Student email
+           td percent correct
+         if(soultions !=undefined)
+          each sol in soultions 
+           
+           tr 
+               td 
+                  a(href="/solutions/#{sol._id}")=  "Solution " + sol._id
+               td  
+                  p= sol.useremail
+               td 
+                  p= sol.percentcorrect
+         
+        

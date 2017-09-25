@@ -1,0 +1,69 @@
+extends layout
+block content
+  script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+  script(src="/javascripts/main.js")
+  script(src="/socket.io/socket.io.js")
+  script(src="/javascripts/user-script.js")
+  script(src="/javascripts/stat-script.js")
+  script(type='text/javascript').
+    $(document).ready(function(){
+        $("ul").filter('.nav.navbar-nav').append('<li><a href="/classes/problems/#{classId}">View Problem set</li>');
+        $("ul").filter('.nav.navbar-nav').append('<li><a href="/classes/problems/#{classId}/#{psid}">Back to problem set</li>');
+        
+     setInterval(function() { 
+         location.reload();
+
+        }, 10000);
+
+    });
+  
+  div.container
+    div(class="row")
+      div(class="col-sm-3 col-md-2 sidebar")
+              ul(class="nav nav-sidebar")
+                li 
+                    h5(class="text-success") Welcome #{user.name}
+               
+                li 
+                  a(href="/logout") Not you logout
+      div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
+        h3.
+         #{p1.pname} Debug List
+        p= "There are " + debuggedUsers.size() +" students"
+        p= "There are " + sortedId.length +" different debuggedproblems"
+        div
+           label Show Students Names
+           
+            if (show =="true" || show==true)
+              input(type="checkbox",id="show",value=true,name="show", checked=true)
+            else
+              input(type="checkbox",id="show",value=false,name="show",checked=false)
+          button(onClick="reloaddebugstat(\"#{classId}\",\"#{psid}\",\"#{p1._id}\")", class="btn btn-primary btn-sm", style="margin-left:5px") Refresh 
+        Table(class="table  table-bordered table-condensed")
+          tr
+             td error # 
+             td debuggers # 
+             td frequent of error
+             if ( show == "true")
+              td Students name
+           if(errorId_users !=undefined)
+            for r,i in sortedId 
+             
+             tr 
+                 td 
+                    a(href="/debug/#{classId}/#{p1._id}/"+r)=  "Debug practice " + (i+1) 
+                 td  
+                    p= errorId_count[r]
+                 td
+                    p= error_frequent[r]
+                  if ( show == "true")
+                   
+                       -var c=""
+                        each d in errorId_users[r]
+                          - c = c+users[d] +", "
+                     td 
+                       p= c
+                     
+
+          
+

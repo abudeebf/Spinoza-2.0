@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+  <head>
+    <!-- Online install -->
+    <link rel="stylesheet" type="text/css" href="//code.jquery.com/qunit/qunit-1.18.0.css" />
+    <!-- Local install for Travis-CI -->
+    <link rel="stylesheet" type="text/css" href="../../../qunit/qunit-1.18.0.css" />
+
+    <!-- Add www/tests (i.e. parent) folder to PYTHONPATH -->
+    <link rel="pythonpath" href=".." hreflang="py" />
+
+    <!-- Needed in sys.path init tests , see test_import.py -->
+    <link id="link_none1" rel="pythonpath" href="/nowhere1" hreflang="none" />
+    <link id="link_none2" rel="pythonpath" href="/nowhere2" hreflang="x-none" />
+    <link id="link_empty_vfs" rel="pythonpath prefetch" href="../test.empty.vfs.js" />
+  </head>
+  <body onload="brython({debug:1, cache:'none', static_stdlib_import:true})">
+    <!-- QUnit init -->
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+    <!-- Online install -->
+    <script src="//code.jquery.com/qunit/qunit-1.18.0.js"></script>
+    <!-- Local install for Travis-CI -->
+    <script src="../../../qunit/qunit-1.18.0.js"></script>
+
+    <!-- Brython init -->
+    <script type="text/javascript" src="../../src/brython_builtins.js"></script>
+    <script type="text/javascript" src="../../src/version_info.js"></script>
+    <script type="text/javascript" src="../../src/py2js.js"></script>
+    <script type="text/javascript" src="../../src/py_object.js"></script>
+    <script type="text/javascript" src="../../src/py_type.js"></script>
+    <script type="text/javascript" src="../../src/py_utils.js"></script>
+    <script type="text/javascript" src="../../src/py_builtin_functions.js"></script>
+    <script type="text/javascript" src="../../src/py_exceptions.js"></script>
+    <script type="text/javascript" src="../../src/py_range_slice.js"></script>
+    <script type="text/javascript" src="../../src/py_bytes.js"></script>
+    <script type="text/javascript" src="../../src/py_set.js"></script>
+    <script type="text/javascript" src="../../src/js_objects.js"></script>
+    <script type="text/javascript" src="../../src/stdlib_paths.js"></script>
+    <script type="text/javascript" src="../../src/py_import.js"></script>
+
+    <script type="text/javascript" src="../../src/py_string.js"></script>
+    <script type="text/javascript" src="../../src/py_int.js"></script>
+    <script type="text/javascript" src="../../src/py_long_int.js"></script>
+    <script type="text/javascript" src="../../src/py_float.js"></script>
+    <script type="text/javascript" src="../../src/py_complex.js"></script>
+    <script type="text/javascript" src="../../src/py_dict.js"></script>
+    <script type="text/javascript" src="../../src/py_list.js"></script>
+    <script type="text/javascript" src="../../src/py_generator.js"></script>
+    <script type="text/javascript" src="../../src/py_dom.js"></script>
+
+    <script type="text/javascript" src="../../src/builtin_modules.js"></script>
+    <script type="text/javascript" src="../../src/py_import_hooks.js"></script>
+    <script type="text/javascript" src="../../src/async.js"></script>
+
+<!-- Javascript code needed to run tests included in dom.py -->
+    <script type="text/javascript" src="../dom_js_tests.js"></script>
+
+<!-- Test cases -->
+    <script type="text/javascript" src="unittest.js"></script>
+
+<script type="text/python3">
+from javascript import JSObject
+from browser import window
+import brython_test_utils as utils
+from   brython_test_utils import unittest as test_utils
+import unittest
+
+_QUnit = JSObject(window.QUnit)
+# TODO: Arg values e.g. verbosity level ?
+result = test_utils.OneTimeTestResult()
+
+def qunit_add_tests(suite):
+    module_name = getattr(suite, 'caption', None) or 'All tests'
+    _QUnit.module(module_name)
+    pend = []
+    for test in suite:
+        if isinstance(test, unittest.BaseTestSuite):
+            pend.append(test)
+        else:
+            _QUnit.test(test.shortDescription(),
+                        window.qunit_unittest_wrapper(test, result))
+    for suite in pend:
+        qunit_add_tests(suite)
+
+
+qunit_add_tests(test_utils.load_brython_test_cases('..'))
+</script>
+
+  </body>
+</html>
+

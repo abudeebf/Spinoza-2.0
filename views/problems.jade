@@ -1,0 +1,114 @@
+extends layout
+block content
+  script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+  script(src="/javascripts/main.js")
+  script(src="/socket.io/socket.io.js")
+  script(src="/javascripts/user-script.js")
+  script(src="/javascripts/stat-script.js")
+  script(type='text/javascript').
+     $(document).ready(function(){
+
+       document.getElementById("inst").innerHTML=$("#instruction").val();
+      
+       $("ul").filter('.nav.navbar-nav').append('<li><a href="/classes/problems/#{classinfom._id}">View problem sets</li>');
+        if("#{userinfo.role}"=="adminteacher"){
+        $("ul").filter('.nav.navbar-nav').append('<li><a href="/students/#{classinfom._id}">View Assignments</li>');
+        $("ul").filter('.nav.navbar-nav').append('<li><a href="/viewstudentstat/#{classinfom._id}/name/AllRecords">View Students Stats</li>');}
+      });
+
+  div.container
+      div(class="row")
+        div(class="col-sm-3 col-md-2 sidebar")
+          ul(class="nav nav-sidebar")
+              li
+                 h5 #{classinfom.cname} #{classinfom.ccode} #{classinfom.cSemester}
+              li 
+                 h5(class="text-success") Welcome #{user.name}
+              if (userinfo.role=="adminteacher")
+                 li
+                   h5(class="text-danger")  Currently connected
+                 li 
+                   h5(class="text-success",id="connections",style="margin-left:20px" )
+                 li
+                  a(href="/newproblem/#{classId}/#{problemsetId}") Create new problem in the set
+                 li
+                  a(href="/library/#{classId}/#{problemsetId}") Add problem to the set from Spinoza Library
+                 li 
+                  a(href="/addTA") Add new TA
+               li 
+                 a(href="/logout") Not you logout
+        div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
+          h3.
+                #{pname} problemset
+          input(type="hidden" value= "#{inst}" id="instruction") 
+          if (ps.codeneeded==true && psaccessflag==false && userinfo.role!="adminteacher")
+              label Access code
+              input(type="text",id="accesscode",placeholder="Please enter access key",style="margin-left:5px")
+              button(onClick="activate(\"#{ps.pin}\",\"#{ps._id}\")",class="btn btn-primary btn-sm", style="margin-left:5px") Activate problem set 
+              div(id="inst",name="inst" hidden)
+          else
+             
+            div(id="inst",name="inst")    
+            div
+              Table(class="table table-bordered table-condensed")
+                if (problemsList.length >0)
+                    each problem , i in problemsList
+                      if (userinfo.role!="adminteacher")
+                        if(problem.show==true)
+                           if ( correctIds1.indexOf(problem._id.toString())>-1)
+                            tr(class="success")
+                               td
+                                  a(href="/#{problem._id}")= "" + problem.pname
+                               td
+                                  p=problem.creator
+                               td
+                                  a(href='/debug/#{problem._id}',class="btn btn-primary btn-sm") Debug other code
+
+                           else 
+                            tr(class="alert-danger")
+                              td
+                                  a(href="/#{problem._id}")= "" + problem.pname
+                              td
+                                  p=problem.creator
+                              td
+
+                         
+                      else
+
+                           tr
+                              td
+                                 a(href="/#{problem._id}")= "" + problem.pname
+                              td
+                                 p=problem.creator
+
+                              td
+                                 a(href='/getdata/#{problem._id}/empty',class="btn btn-primary btn-sm") Engagment graph
+
+                              td
+                                  a(href='/debug/#{problem._id}',class="btn btn-primary btn-sm") Debug other code
+                              td 
+                                  a(href='/debugstat/#{classId}/#{problemsetId}/#{problem._id}/false',class="btn btn-primary btn-sm") Show debug stat
+                              td
+                                div(class="checkbox")
+                                    label show
+                                      input(type="checkbox",id="showProblem",checked=problem.show,name="#{problem._id}",onclick='handleClick(this)')
+                              td 
+                                  a(href="/problems/update/#{classId}/#{problemsetId}/#{problem._id}", class="btn btn-primary btn-sm")= "Update"
+                              td
+
+                                  a(href="/#{classId}[]#{problem._id}[]0[]1[]All[]false[]All[]0[]0[]0", class="btn btn-primary btn-sm")= "View Graph"
+                              td 
+                                  a(href="/summary/submission/#{classId}/#{problem._id}/false",class="btn btn-primary btn-sm")="Show grouped solutions"
+                              td 
+                                  button(onClick='copy(\"#{problem._id}\")',style='width: 100px; height: 30px;',class="btn btn-primary btn-sm") Copy
+                              td 
+                                  button(onClick='delete1(\"#{problem._id}\")',style='width: 100px; height: 30px;',class="btn btn-primary btn-sm") Delete
+
+                              td
+                                div(class="checkbox")
+                                    label Correct Versions
+                                    input(type="checkbox",id="allowCorrect",checked=problem.allowCorrect,name="allowCorrect",onclick='allowCorrect(this,\"#{problem._id}\")')
+
+                  else 
+                        p You did not add problems yet
+                 

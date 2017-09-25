@@ -1,0 +1,193 @@
+extends layout
+block content
+    script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+    script(src="/socket.io/socket.io.js")
+    script(src="/javascripts/user-script.js")
+    script(src="/javascripts/stat-script.js")
+    script(src="/javascripts/bootstrap.js")
+    script(src="/javascripts/bootstrap.min.js")
+    script(src="/javascripts/jquery.autocomplete.min.js")
+    script(src="/javascripts/main.js")
+    script(type='text/javascript').
+        $(window).bind('beforeunload', function(){
+              test4("#{id1}","#{student}","#{user.email}");
+              return 'if you leave code will be saved ';
+        });
+      
+        $(document).ready(function(){
+            $("ul").filter('.nav.navbar-nav').append('<li><a href="/codeshared">View Shared Codes</li>');
+           if ("#{user.role}"=="adminteacher")  
+            $("ul").filter('.nav.navbar-nav').append('<li><a href="/students">View Assignments</li>');
+            $("ul").filter('.nav.navbar-nav').append('<li><a href="/viewstudentstat/runPerProblems/AllRecords">View Students Stats</li>');
+         
+          makeShareUser(!{JSON.stringify(users)});
+          createFiles("#{files}");
+          shareWith("#{sharedUser}");
+          setInterval(function() { 
+            test4("#{id1}","#{student}","#{user.email}");
+            }, 1000);
+
+        });
+    div.container
+      div(class="row")
+        div(class="col-sm-3 col-md-2 sidebar")
+          ul(class="nav nav-sidebar")
+              li 
+                 h5(class="text-success") Welcome #{user.name}
+             
+                
+              if ( (student == user.email)==false)
+                li
+                  h5 You are viewing the solution for student #{studentname} 
+              if (user.role=="adminteacher")
+                li
+                   h5(class="text-danger")  Currently connected
+                li 
+                   h5(class="text-success",id="connections",style="margin-left:20px" )
+                li
+                  a(href="/newproblem")  Add new Homework
+                li
+                  a(href="/newexcersise") Add new Class Exercise
+                li 
+                  a(href="/addTA") Add new TA
+              if ((student==user.email)==false && back=="solutions")
+                li 
+                  a(href="/summery/submission/#{id1}") View Submissions
+              else if ((student==user.email)==false && back=="solutions2")
+                li
+                  a(href="/problems/submission/#{id1}") View Submissions
+              li 
+                 a(href="/logout") Not you logout
+        div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
+          div.row
+             div.span8
+                table
+                        tr
+                          
+                          td
+                             h4(style="margin-right:15px") Exercise Description 
+                              button(onClick='run2(\"#{id1}\",\"#{student}\",\"#{user.email}\",\"#{user.role}\",\"#{classId}\")',class="btn btn-primary btn-sm ") Compile and Run
+                              
+                          td
+                            input(id="theme",value="#{theme}", type="hidden")
+                            input(id="IDEmode",value="#{mode}", type="hidden")
+                            input(id="allow",value="#{allow}", type="hidden")
+                            input(id="description",value="#{title}", type="hidden")
+                            if (back!="shared")
+                             button(onClick='reset(\"#{id1}\")',style='margin-right:5px;',class="btn btn-primary btn-sm") reset
+                            label Program Name
+                            input(name="classname",type="Text",id="cn", placeholder="Please enter the class name.",value= "#{cn}",style="margin-left:5px") 
+                            a(class="btn btn-primary btn-sm",id="a",style="margin-left:5px") Download
+                            select(id="selectTheme",style="margin-left:5px")
+                              option Choose a theme
+                            select(id="mode",style="margin-left:5px")
+                              option Choose a mode
+                          
+                        tr
+                          td
+                            div(name="des1" ,id="u",readonly="readonly",style="border:thick solid #000000") 
+                              
+                          td
+                            div(name="code", rows=20,cols=100 ,id="editor",style="border:thick solid #000000") #{pro}
+                            input(name="code2",type="hidden",id="code2",value="#{pro}")   
+                        tr 
+                          td(colspan="2")
+                            div(class="tabbable")
+                              ul(class="nav nav-tabs" id="tabs")
+                                li(class="active")
+                                  a(href="#tab1",data-toggle="tab") Stdout
+                                li
+                                  a(href="#tab2",data-toggle="tab") Stdin
+                                li 
+                                  a(href="#files",data-toggle="tab") File Explorer
+                                li
+                                  a(href="#sharing",data-toggle="tab") Sharing 
+                              div(class="tab-content")
+                                textarea(class="tab-pane active",id="tab1",name="result",readonly="readonly",style="margin-left:2px;font-family:monospace;") #{result}
+                                textarea(class="tab-pane", id="tab2",name="stdINN",type="Text", placeholder="Please enter your input to the programm",style="margin-left:2px;font-family:monospace;") #{StdinP}
+                                div(class="tab-pane",id="files",name="files")
+                                div(class="tab-pane",id="sharing",name="sharing")
+                                   input(type="text", name="share", class="biginput", id="autocomplete")
+                                   button(class="btn btn-primary",id="sharebutton",style="margin-left:5px",OnClick="share(\"#{id1}\",\"#{user.email}\")") Share
+                                   hr
+                                   div(id="shareDiv",name="shareDiv")
+                                     
+                                
+
+
+                        
+            
+
+       script.
+            var select = document.getElementById("selectTheme");
+            var options = ["textmate", "eclipse", "monokai", "twilight", "clouds"];
+            for(var i = 0; i < options.length; i++) {
+              var opt = options[i];
+              var el = document.createElement("option");
+              el.textContent = opt;
+              el.value = opt;
+              select.appendChild(el);
+            }
+            var select1 = document.getElementById("mode");
+            var options2 = ["java", "javascript", "html", "css", "python"];
+            for(var i = 0; i < options2.length; i++) {
+              var opt1 = options2[i];
+              var el2 = document.createElement("option");
+              el2.textContent = opt1;
+              el2.value = opt1;
+              select1.appendChild(el2);
+            }
+            var a=document.getElementById("a");
+            var editor = ace.edit("editor");
+            editor.getSession().setTabSize(2);
+            var theme = document.getElementById("theme");
+            
+            var mode = document.getElementById("IDEmode");
+            if (theme.value !=null && theme.value !=undefined && theme.value !="Choose a theme" && theme.value !="undefined")
+              {
+                editor.setTheme("ace/theme/"+theme.value);
+                select.value=theme.value;
+
+              }
+            else
+              {editor.setTheme("ace/theme/textmate");
+               select.value="textmate";
+              }
+             
+             if (mode.value !=null && mode.value !=undefined && mode.value!="choose a mode"&& mode.value !="undefined")
+               {
+                 editor.getSession().setMode("ace/mode/"+mode.value);
+                 a.href="/download/#{id1}/#{student}/"+mode.value;
+                 select1.value=mode.value;
+                 saveMode(mode.value);
+               }
+            else
+              {
+                editor.getSession().setMode("ace/mode/java");
+                a.href="/download/#{id1}/#{student}/java";
+                select1.value="java";
+                saveMode("java");
+              }
+
+            document.querySelector('input[name=code2]').value=editor.getValue();
+            editor.setFontSize(14);
+            select.addEventListener('change', function() {
+                editor.setTheme("ace/theme/"+this.value);
+                saveTheme(this.value);
+             });
+            select1.addEventListener('change', function() {
+              
+              editor.getSession().setMode("ace/mode/"+this.value)
+              a.href="/download/#{id1}/#{student}/"+this.value;
+              saveMode(this.value);
+            });
+            var desc=document.getElementById("description").value.replace(/"/g, "'");
+            document.querySelector('div[name=des1]').innerHTML= ""+desc;
+
+            $('#u').scrollTop($('#u')[0].scrollHeight);
+              editor.on('paste', function(text){ 
+            });
+            editor.getSession().on('change', function(e) {
+              test4("#{id1}","#{student}","#{user.email}");
+            });
+            

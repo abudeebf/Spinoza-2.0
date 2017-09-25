@@ -1,0 +1,357 @@
+doctype html
+html
+head
+meta(charset='utf-8')
+meta(name='viewport', content='width=device-width, initial-scale=1.0')
+meta(name='description', content='')
+meta(name='author', content='')
+meta(name='copyright', content='Copyright (c) 2013 ALT-F1, We believe in the projects we work on™')
+link(rel='shortcut icon', href='/bootstrap-3.0.0/assets/ico/favicon.png')
+title Spinoza
+link(rel="stylesheet",href="/doc/doc_brython.css")
+link(rel="stylesheet" href="/console.css")
+link(rel='stylesheet', href='/stylesheets/style.css')
+link(href='/bootstrap-3.0.0/dist/css/bootstrap.css', rel='stylesheet')
+link(href='/bootstrap-3.0.0/examples/starter-template/starter-template.css', rel='stylesheet')
+link(rel='stylesheet', href='/stylesheets/vis.css')
+link(rel='stylesheet', href='/stylesheets/style.css')
+script(type="text/javascript",src="/javascripts/main.js")
+
+script(src='/bootstrap-3.0.0/assets/js/html5shiv.js')
+ink(rel='stylesheet', href='/stylesheets/jquery.classyedit.css')
+script(src='/javascripts/jquery.xdomainrequest.min.js')
+script(src='/javascripts/jQuery.XDomainRequest.js')
+script(src='/bootstrap-3.0.0/assets/js/jquery.js').
+script(src='/bootstrap-3.0.0/dist/js/bootstrap.min.js')
+script(type="text/javascript",src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+script(type="text/javascript",src="/javascripts/bootstrap.js")
+script(type="text/javascript",src="/javascripts/bootstrap.min.js")
+
+script(src="/ace/ace.js" type="text/javascript",charset="utf-8")
+script(src="/ace/ext-language_tools.js" ,type="text/javascript", charset="utf-8")
+script(src="/ace/mode-python3.js", type="text/javascript", charset="utf-8")
+script(src="/ace/snippets/python.js", type="text/javascript", charset="utf-8")
+script(type="text/javascript", src="/src/brython_builtins.js")
+script(type="text/javascript", src="/src/version_info.js")
+script(type="text/javascript", src="/src/py2js.js")
+script(type="text/javascript", src="/src/py_object.js")
+script(type="text/javascript", src="/src/py_type.js")
+script(type="text/javascript", src="/src/py_utils.js")
+script(type="text/javascript", src="/src/py_builtin_functions.js")
+script(type="text/javascript", src="/src/py_exceptions.js")
+script(type="text/javascript", src="/src/py_range_slice.js")
+script(type="text/javascript", src="/src/py_bytes.js")
+script(type="text/javascript", src="/src/py_set.js")
+script(type="text/javascript", src="/src/js_objects.js")
+script(type="text/javascript", src="/src/stdlib_paths.js")
+script(type="text/javascript", src="/src/py_import.js")
+script(type="text/javascript", src="/src/py_string.js")
+script(type="text/javascript", src="/src/py_int.js")
+script(type="text/javascript", src="/src/py_long_int.js")
+script(type="text/javascript", src="/src/py_float.js")
+script(type="text/javascript", src="/src/py_complex.js")
+script(type="text/javascript", src="/src/py_dict.js")
+script(type="text/javascript", src="/src/py_list.js")
+script(type="text/javascript", src="/src/py_generator.js")
+script(type="text/javascript", src="/src/py_dom.js")
+script(type="text/javascript", src="/src/builtin_modules.js")
+script(type="text/javascript", src="/src/py_import_hooks.js")
+script(type="text/javascript",src="/javascripts/vis.js")
+script(type="text/javascript", src="/src/async.js")
+
+script(type="text/python3",id="tests").
+	import time
+	import sys
+	import traceback
+	import dis
+	import json
+	from javascript import JSObject, console
+	from browser import document as doc, window, alert, console, prompt
+	from browser import timer
+	from browser import editor, brython_test_utils as utils
+	from browser.local_storage import storage
+	script_num = -1
+	failed = []
+	t_start = None
+	x=0
+	_jquery=JSObject(window.jQuery)
+	def run():
+		alert("hi")
+	doc['run'].bind('click',lambda ev:run())
+	
+
+script(type='text/javascript').
+	var nodeCodeCounter ={};
+	var hash_code=!{JSON.stringify(hash_code)};
+	var nodeNames=!{JSON.stringify(nodesName)};
+	var hash_names=!{JSON.stringify(hash_names)};
+	var users=!{JSON.stringify(users)};
+	function showanotherversion(id){
+		var nodeName=document.getElementById("hashtest").value;
+		if(nodeName=="0" || nodeName=="1" || nodeName=="")
+			alert("this selection dose not have other version");
+		else{
+			var arr = Object.keys(hash_code[nodeName]).map(function (key) {return hash_code[nodeName][key]});
+			var studentemails=Object.keys(hash_names[nodeName]).map(function (key) {return hash_names[nodeName][key]});
+
+			var part=nodeNames[nodeName].split("_");
+			var attempts=arr[0].length;
+			var counter=nodeCodeCounter[nodeName]+1;
+			nodeCodeCounter[nodeName]+=1;
+			if (counter>=attempts){
+				counter=0;
+				nodeCodeCounter[nodeName]=0
+			}
+			document.getElementById('codeversion').innerHTML=(counter+1) +"/"+ attempts;
+			document.getElementById('codeWriter').innerHTML=users[studentemails[0][counter]]
+			document.getElementById("code2").value=arr[0][counter];
+			var editor = ace.edit("editor")
+			editor.setValue(arr[0][counter], 0);
+		}
+
+
+	}
+
+	$(window).load(function () 
+	{
+		var nodes = new vis.DataSet();
+		var edges = new vis.DataSet();
+		var nodeNames=!{JSON.stringify(nodesName)};
+		var hash_code=!{JSON.stringify(hash_code)};
+		var hash_names=!{JSON.stringify(hash_names)};
+		var users=!{JSON.stringify(users)};
+		var percent=!{JSON.stringify(percent)};
+		var counthash=!{JSON.stringify(counthash)};
+		var fromCount=!{JSON.stringify(fromCount)};
+		var self_node=!{JSON.stringify(self_node)};
+		var minR=parseInt(!{JSON.stringify(minR)});
+		var nodeRadious;
+		var l=0;
+		var result=!{JSON.stringify(result)};
+		for ( var key in !{JSON.stringify(alises)}){
+			var colr=convertRGB(1-(percent[key]/100),(percent[key]/100),0);
+			if (key in self_node)
+				nodeRadious=Math.sqrt(counthash[key]-result[self_node[key]]);
+			else
+				nodeRadious=Math.sqrt(counthash[key]);
+			l=l+1;
+			nodes.add( {id: key ,level:l, label:nodeNames[key],value:nodeRadious,title:nodeNames[key],fontStrokeWidth : 4,fontStrokeColor : 'white',shape: 'dot',color: {
+			border: 'black',
+			background:colr ,
+			highlight: {
+			border: colr,
+			background: 'gold'
+			}}});
+		}
+		l=l+1;
+		nodes.add({id:"0",label:"Start_"+!{JSON.stringify(start_no)},title:"Start_"+!{JSON.stringify(start_no)},value:Math.sqrt(!{JSON.stringify(start_no)}),fontStrokeWidth : 4,fontStrokeColor : 'white',shape: 'dot',color: {
+		border: 'black',
+		background:"red",level:l}});
+		l=l+1;
+		nodes.add({id:"1",level:l,label:"Gaveup_"+!{JSON.stringify(gaveup_no)},title:"Gaveup_"+!{JSON.stringify(gaveup_no)},value:Math.sqrt(!{JSON.stringify(gaveup_no)}),fontStrokeWidth : 4,fontStrokeColor : 'white',shape: 'dot',color: {
+		border: 'black',
+		background:"gray"}});
+		var edgeno;
+		var c=0;
+		var w=1;
+		var type="diagonalCross";
+		var find=[];
+		var edgesin=[];
+		var addege=true;
+		for ( var key in result )
+		{
+			var from1=key.split("->")[0].trim();
+			var to1=key.split("->")[1].trim();
+			if (from1=="0" || to1=="1")
+			{
+				edgeno=result[key];
+				addedge=true;
+			}
+
+			else
+				{
+					if (result[to1+"->"+from1]==undefined || to1==from1)
+					{
+						addedge=true;
+						edgeno=result[key];
+					}
+					else if ( edgesin.indexOf(key)<=-1)
+					{
+						edgesin.push(key);
+						edgesin.push(to1+"->"+from1);
+						if (result[to1+"->"+from1]> result[key]){
+							edgeno=result[to1+"->"+from1] + " - " +result[key];
+							from1=key.split("->")[1].trim();
+							to1=key.split("->")[0].trim();
+							addedge=true;
+						}
+						else 
+						{
+							edgeno=result[key] + " - " +result[to1+"->"+from1];
+							addedge=true;
+						}
+
+					}
+					else
+					{
+						addedge=false;
+					}
+				}
+			if(addedge)
+			{
+				c=c+1;
+				if (result[from1+"->"+to1]<10)
+					w=1;
+				else
+					w=2;
+				edges.add({id: c+"", from: from1, to: to1, width:w,
+				style: 'arrow',title:edgeno,
+				color: 'blue',label:edgeno,labelAlignment:'line-center',fontStrokeWidth : 2,fontStrokeColor : '#00ff00',smoothCurves:{type:type, roundness:1}});
+			}
+
+		}
+		// create a network
+		var container = $('#network').get(0);
+		var data = {
+		nodes: nodes,
+		edges: edges
+		};
+		var editor = ace.edit("editor") 
+		editor.getSession().setTabSize(2)
+		editor.setTheme("ace/theme/textmate")
+		editor.getSession().setMode("ace/mode/java")
+		editor.setFontSize(12);
+		var select = document.getElementById("choosesection");
+		var options = ["All", "S1", "S2"];
+		for(var i = 0; i < options.length; i++) 
+		{
+			var opt = options[i];
+			var el = document.createElement("option");
+			el.textContent = opt;
+			el.value = opt;
+			select.appendChild(el);
+		}
+		select.value="#{section}"
+		document.getElementById("k").value="#{k}";
+		document.getElementById("minR").value="#{minR}";
+		var options = {nodes:{radiusMin:minR,radiusMax:40},stabilize: true,physics:{barnesHut: {enabled: false}, repulsion: {nodeDistance: 300, springLength: 150}}, smoothCurves: true};
+		network = new vis.Network(container, data, options);
+		network.on('doubleClick', function(params) {
+		if (params.nodes !="0" && params.nodes !="1")
+			viewSubmission(params.nodes,!{JSON.stringify(id1)},!{JSON.stringify(section)});
+		});
+		network.on("select",function(params) {
+
+		editor.setValue("", 0);
+		document.getElementById("hashtest").value=params.nodes
+		if (params.nodes !="0" && params.nodes !="1"){
+			var info=nodeNames[params.nodes].split("_");
+			var val;
+			document.getElementById('selection').innerHTML = 'Selection: ' + info[0]+"<br/> attempts#: " + info[1]+"<br/> correctness percentage= " +info[2]+"<br/> unique user#= " +info[3];
+			var arr = Object.keys(hash_code[params.nodes]).map(function (key) {return hash_code[params.nodes][key]});
+			var email=Object.keys(hash_names[params.nodes]).map(function (key) {return hash_names[params.nodes][key]});
+			editor.setValue(arr[0][0], 0);
+			document.getElementById("code2").value=arr[0][0];
+			document.getElementById('codeWriter').innerHTML=users[email[0][0]]
+
+			nodeCodeCounter[params.nodes]=0;
+		}else{
+			if( JSON.stringify(params.nodes)=="[\"0\"]"){
+			document.getElementById('selection').innerHTML = 'Selection: start <br/> attempts#: ' + !{JSON.stringify(start_no)};
+			editor.setValue(!{JSON.stringify(scafolding)}, 0);}
+			else{
+			document.getElementById('selection').innerHTML = 'Selection: gaveup <br/> attempts#: ' +!{JSON.stringify(gaveup_no)}
+			editor.setValue("", 0);
+			}
+		}
+
+		});
+	});
+body(onload="brython({debug:1, cache:'none', static_stdlib_import:true})")
+			.navbar.navbar-inverse.navbar-fixed-top
+					.container
+							.navbar-header
+									button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-collapse')
+											span.icon-bar
+											span.icon-bar
+											span.icon-bar
+									a.navbar-brand(href='/profile') Spinoza
+							.collapse.navbar-collapse
+									ul.nav.navbar-nav
+											li
+													a(href='/') Login
+											li
+													a(href="/pythonide") Python IDE
+												//- li  
+												//-     a(herf='/updateSections') Update Sections
+				.container
+		div.container
+				div(class="row")
+						div(class="col-sm-3 col-md-2 sidebar")
+							ul(class="nav nav-sidebar")
+								li 
+									h5(class="text-success") Welcome #{user.name}
+								li
+									h5(class="text-danger")  Currently connected
+								li 
+									h5(class="text-success",id="connections",style="margin-left:20px" )
+								li
+									a(href="/summary/#{id1}/false")= "View grouped current solutions"
+								li
+									a(href="/summarystat/#{id1}/loc")= "View indivdual students stats"
+								li 
+									a(href="/realtimegraph/#{id1}/0/1/All")= "View Graph"
+								li
+									hr
+								li
+									a(href="/newproblem")  Add new Practice
+								//- li
+								//-   a(href="/newexcersise") Add new Class Exercise
+								li 
+									a(href="/addTA") Add new TA
+								li 
+									a(href="/logout") Not you logout
+
+					div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
+						h2.
+							Spinoza Markov Model for #{pname} 
+						label Section
+						select(id="choosesection",style="margin-left:5px")
+								option choose a section
+						label(style="margin-left:5px") k
+						input(name="k",type="number",min=0, value="" id="k",style="margin-left:5px")
+						label(style="margin-left:5px") Min Node Size
+						input(name="minR",type="number", value="",min=1, id="minR",style="margin-left:5px")
+						input(id="hashtest",type="hidden")
+						input(id="pid",type="hidden",value="#{id1}")
+						input(id="code2",type="hidden")
+						input(id="sol",type="hidden",value="#{sol}")
+						input(id="host",type="hidden",value="#{host}")
+						input(id="unitTest1",type="hidden",value="#{test}")
+						input(id="methodname",type="hidden",value="#{methodname}")
+						input(id="retype",type="hidden",value="#{retype}")
+						input(id="pNumbers",type="hidden",value="#{pNumbers}")
+						button(onClick="viewgraph(\"#{id1}\")", class="btn btn-primary btn-sm", style="margin-left:5px") Refresh Graph
+						p(id="selection")
+						div(class="row")                
+							div(class="col-xs-6 tabbable")
+								ul(class="nav nav-tabs" id="tabs")
+									li(class="active")
+										a(href="#network",data-toggle="tab") Markov Model
+									li
+										a(href="#console",data-toggle="tab") Stdout
+									li
+										a(href="#testr",data-toggle="tab") Test Result
+								div(class="tab-content")
+									div(class="tab-pane ",name="testr",id="testr" style="overflow: scroll;height:600px;")
+									div(class="tab-pane active", id="network" style="height:600px; border:thick solid #000000;")
+									textarea(class="tab-pane ",name="console",id="console")
+							div(class="col-xs-6", id="editor" ,name="code",style="margin-top:45px;border:thick solid #000000; height:600px; overflow:Scrollbar")
+						div(class="row")
+						div(class="col-xs-6")     
+							button(onClick="makebuggyProblem(\"#{id1}\")" class="btn btn-primary btn-sm", style="margin-top:5px") Post buggy problem
+						div(class="col-xs-6")
+							button(onClick="showanotherversion(\"#{id1}\")" class="btn btn-primary btn-sm", style="margin-left:5px;margin-top:5px") Show another version
+							button(id="run", class="btn btn-primary btn-sm", style="margin-top:5px;margin-left:5px") Run
+							p(id="codeWriter")
+							p(id="codeversion")

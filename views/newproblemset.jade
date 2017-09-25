@@ -1,0 +1,119 @@
+extends layout
+
+block content
+     script(src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js")
+     script(src="/socket.io/socket.io.js")
+     script(src="/javascripts/user-script.js")
+     script(src="/javascripts/stat-script.js")
+     script(src="/javascripts/jquery.classyedit.js")
+     script(src="/javascripts/jquery.datetimepicker.js")
+     script(type='text/javascript').
+          $(document).ready(function(){
+            $(".classy-editor").ClassyEdit();
+            $("ul").filter('.nav.navbar-nav').append('<li><a href="/codeshared">View Shared Codes</li>');
+            $("ul").filter('.nav.navbar-nav').append('<li><a href="/classes/problems/#{classId}">Problem Set</li>');
+           });
+           function newAccessKey(){
+             $("#pin").val('_' + Math.random().toString(36).substr(2, 8));
+           }
+           function change(){
+            if($("#codeneeded").is(':checked')){
+                newAccessKey();
+            } else {
+               $("#pin").val("")   
+            }
+            }
+     div.container
+        div(class="row")
+            div(class="col-sm-3 col-md-2 sidebar")
+                ul(class="nav nav-sidebar")
+                    li
+                         h5 #{classinfom.cname} #{classinfom.ccode} #{classinfom.cSemester}
+                    li 
+                         h5(class="text-success") Welcome #{user.name}
+                    li
+                       h5(class="text-danger")  Currently connected
+                    li 
+                       h5(class="text-success",id="connections",style="margin-left:20px" )
+                    li 
+                      a(href="/logout") Not you logout
+            div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
+              form(name="addProblem",method="post",action="/addnewproblemSet" , role="form",class="form-horizontal")
+                          h3 #{title} in #{classinfom.cname}
+                          table(class="table table-striped table-bordered table-condensed")
+                              tr
+                                  td
+                                      label Problem Set Name
+                                  td
+                                      if (ps==undefined)
+                                        input(name="pname",type="Text" ,class="form-control", placeholder="Please enter the problem name.",value=" ")
+                                      else 
+                                        input(name="pname",type="Text" ,class="form-control", placeholder="Please enter the problem name.",value="#{ps.pname}")
+                                        input(name="pid",type="hidden", value="#{ps._id}")
+                                        input(name="accesscode",type="hidden", value="#{ps.codeneeded}")
+                                        input(name="showproblemset",type="hidden", value="#{ps.showproblemset}")
+                              tr
+                                  td
+                                      label Skill to Test
+                                  td  
+                                        if (ps==undefined)
+                                          input(name="skills",type="Text" , placeholder="what is the problem test?",style='width: 200px; height: 25px;',value=" ")
+                                        else
+                                          input(name="skills",type="Text",placeholder="what is the problem test?",style='width: 200px; height: 25px;',value="#{ps.pskill}")
+                              tr
+                                   td
+                                      label Instruction
+                                   td
+                                      if (ps==undefined)
+                                        textarea(name="inst", rows=4,cols=100 ,id="u66",class="classy-editor") 
+                                      else
+                                        textarea(name="inst", rows=4,cols=100 ,id="u66",class="classy-editor") #{ps.pinst}
+                              tr 
+                                   td 
+                                      label Due Time
+                                      input(name="classId", type="hidden" value="#{classinfom._id}",id="classId")
+                                   td
+                                      input(name="duetime",type="text" value="" id="datetimepicker_mask")
+                              tr
+                                    td
+                                        label Access code
+                                    td
+                                        if ( ps==undefined || ps.codeneeded==undefined || ps.codeneeded==false)
+                                         input(type="checkbox",id="codeneeded",value=false,name="codeneeded",checked=false,onClick='change()')
+                                        else
+                                         input(type="checkbox",id="codeneeded",value=true,name="codeneeded",checked=true,onClick='change()')
+                              tr
+                                  td
+                                      if (ps==undefined || ps.pin==undefined)
+                                       input(type="text",id="pin",value="",name="pin",readonly)
+                                      else
+                                        input(type="text",id="pin",value="#{ps.pin}",name="pin",readonly)
+
+                              tr
+                                 td
+                                        label require submission
+                                    td
+                                        if ( ps!=undefined && ps.reqsubmission!=undefined)
+                                          input(type="hidden", name="reqsubmission2", value="#{ps.reqsubmission}")
+                                        if ( ps==undefined || ps.reqsubmission==undefined || ps.reqsubmission==false)
+                                         input(type="checkbox",id="reqsubmission",value=false,name="reqsubmission",checked=false)
+                                          
+                                        else
+                                         input(type="checkbox",id="reqsubmission",value=true,name="reqsubmission",checked=true)
+                                         
+
+                              tr
+                                   td(colspan=2)
+                                      button#btnSubmit(type="submit",style='width: 200px; height: 50px;',class="btn btn-primary btn-lg") Save
+
+                                  
+
+                                  
+
+
+            script.
+              $('#datetimepicker_mask').datetimepicker({
+                mask:'9999/19/39 29:59',
+                formatTime:'h:a'
+                });
+                

@@ -1,0 +1,66 @@
+extends layout
+block content
+  script(type='text/javascript').
+    $(document).ready(function(){
+              $("ul").filter('.nav.navbar-nav').append('<li><a href="/codeshared">View Shared Codes</li>');
+              $("ul").filter('.nav.navbar-nav').append('<li><a href="/students">View Assignments</li>');
+              $("ul").filter('.nav.navbar-nav').append('<li><a href="/viewstudentstat/runPerProblems/AllRecords">View Students Stats</li>');
+             
+      });
+  script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+  script(src="/socket.io/socket.io.js")
+  script(src="/javascripts/user-script.js")
+  script(src="/javascripts/stat-script.js")
+  div.container
+    div(class="row")
+          div(class="col-sm-3 col-md-2 sidebar")
+              ul(class="nav nav-sidebar")
+                li 
+                    h5(class="text-success") Welcome #{user.name}
+               
+                li 
+                    h4 You are viewing  #{user2.name},#{user2.email} assignments
+                li
+                   h5(class="text-danger")  Currently connected
+                li 
+                   h5(class="text-success",id="connections",style="margin-left:20px" )
+                li
+                  a(href="/newproblem")  Add new Homework
+                li
+                  a(href="/newexcersise") Add new Class Exercise
+                li 
+                  a(href="/addTA") Add new TA
+                li 
+                  a(href="/logout") Not you logout
+          div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
+            h3= user2.name +" Assignments"
+            div
+              Table(class="table table-striped table-bordered table-condensed")
+                tr
+                  td Problem name 
+                  td Submission time
+                  td Graded 
+                each u, i in problems
+                  if (u.percentcorrect==100 )        
+                     tr(class="success")
+                        td 
+                           p=i
+                        td
+                            a(href="/#{u.pid}()#{u.useremail}")= problemsdict[u.pid] 
+                        td
+                            p= u.time
+                        td 
+
+                   else
+                       tr
+                          td
+                            p=i
+                          td
+                            a(href="/#{u.pid}()#{u.useremail}")= problemsdict[u.pid] 
+                          td
+                              p= u.time
+                          td 
+
+                                     
+                                
+                             

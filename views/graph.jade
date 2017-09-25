@@ -1,0 +1,17 @@
+extends layout
+block content
+	script(src="/javascripts/Graphreq/graph1.js")
+	script(src="/javascripts/Graphreq/raphael-min.js")
+	script(src="/socket.io/socket.io.js")
+    script(src="/javascripts/user-script.js")
+	script(src="/javascripts/Graphreq/dracula_graffle.js")
+	script(src="/javascripts/Graphreq/jquery-1.4.2.min.js")
+	script(src="/javascripts/Graphreq/dracula_graph.js")
+	script(type='text/javascript').
+		$(document).ready(function(){
+			$("ul").filter('.nav.navbar-nav').append('<li><a href="/students">View Assignments</li>');
+			makegraph(!{JSON.stringify(node1)},!{JSON.stringify(node2)},!{JSON.stringify(result)});
+		});
+
+	p="Grpah fo Homework"
+	div(id="canvas")

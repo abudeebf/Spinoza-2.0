@@ -1,0 +1,153 @@
+extends layout
+block content
+    script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+    script(src="/javascripts/bootstrap.js")
+    script(src="/javascripts/bootstrap.min.js")
+    script(src="/socket.io/socket.io.js")
+    script(src="/javascripts/jquery.autocomplete.min.js")
+    script(src="/javascripts/user-script.js")
+    script(src="/javascripts/stat-script.js")
+    script(src="/javascripts/main.js")
+    script(type='text/javascript').
+        $(document).ready(function(){
+           $("ul").filter('.nav.navbar-nav').append('<li><a href="/codeshared">View Shared Codes</li>');
+           if ("#{user.role}"=="adminteacher")  
+            $("ul").filter('.nav.navbar-nav').append('<li><a href="/students">View Assignments</li>');
+            $("ul").filter('.nav.navbar-nav').append('<li><a href="/viewstudentstat/runPerProblems/AllRecords">View Students Stats</li>');
+          
+          makeShareUser(!{JSON.stringify(users)});
+          shareWith("#{sharedUser}");
+         setInterval(function() { 
+            test3("#{id1}");
+            }, 1000);
+
+        });
+        $(window).on('beforeunload', function() {
+          alert("your changes will be saved ");
+          test3("#{id1}");
+        });
+        window.onunload = function() { 
+          alert("your changes will be saved ");
+          test3("#{id1}");
+        }
+    div.container
+      div(class="row")
+        div(class="col-sm-3 col-md-2 sidebar")
+          ul(class="nav nav-sidebar")
+              li 
+                 h5(class="text-success") Welcome #{user.name}
+              if (user.role=="adminteacher")
+                 li
+                   h5(class="text-danger")  Currently connected
+                 li 
+                   h5(class="text-success",id="connections",style="margin-left:20px" )
+                 li
+                  a(href="/newproblem")  Add new Homework
+                 li
+                  a(href="/newexcersise") Add new Class Exercise
+                 li 
+                  a(href="/addTA") Add new TA
+               li 
+                 a(href="/logout") Not you logout
+        div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
+            table
+                tr
+                    td
+                         h4 Homework Description
+                          button(onClick='test(\"#{id1}\",\"#{user.email}\",\"#{classname}\")',style='margin-left:5px',class="btn btn-primary btn-sm") Compile and Run     
+                    td
+                        button(onClick='reset(\"#{id1}\")',style='margin-right:10px;',class="btn btn-primary btn-sm") Reset
+                        label Theme
+                        select(id="selectTheme",style="margin-left:5px")
+                            option choose a theme
+                        a(class="btn btn-primary btn-sm",style="margin-left:5px",id="a",href="/download/#{id1}/") Download
+                              
+                tr
+                    td 
+                        div(name="des1" ,id="u",readonly="readonly",style="border:thick solid #000000") 
+                        input(id="description",value="#{title}", type="hidden")
+                    td
+                        div(name="code", rows=20,cols=100 ,id="editor",style="border:thick solid #000000") #{code}
+                        input(name="code2",type="hidden",id="code2")
+                        input(id="theme",value="#{theme}", type="hidden")
+                        input(id="classname",name="classname",value="#{classname}", type="hidden")
+          
+            div.span4
+                div(class="tabbable")
+                        ul(class="nav nav-tabs" id="tabs")
+                          li(class="active")
+                            a(href="#testr",data-toggle="tab") Test Result
+                          li
+                            a(href="#result",data-toggle="tab") Stdout
+                          li 
+                             a(href="#submitgrade",data-toggle="tab") Submit to grade
+                          li
+                            a(href="#sharing",data-toggle="tab") Sharing
+                        div(class="tab-content")
+                          div(class="tab-pane active",name="testr",id="testr")
+                          textarea(class="tab-pane ",id="result",name="result",readonly="readonly",style="margin-left:2px;font-family:monospace;") #{result}
+                          div(class="tab-pane",id="sharing",name="sharing")
+                                   input(type="text", name="share", class="biginput", id="autocomplete")
+                                   button(class="btn btn-primary",id="sharebutton",style="margin-left:5px",OnClick="share(\"#{id1}\",\"#{user.email}\")") Share
+                                   hr
+                                   div(id="shareDiv",name="shareDiv")
+                          div(class="tab-pane",id="submitgrade",name="submitgrade")
+                             table
+                              tr
+                               td 
+                                 p  Feedback before submitting to grade : 
+                              tr
+                                td 
+                                   div(name="feedback",id="feedback")
+                                         label
+                                         input(type="radio", name="goodness", id="goodness", value=0,checked=false)
+                                         |Easy
+                                         label
+                                         input(type="radio", name="goodness", id="goodness", value=1,checked=false)
+                                         |Neutral
+                                         label 
+                                         input(type="radio", name="goodness", id="goodness", value=2,checked=false)
+                                         |Diffcult
+                                         hr
+                              tr
+                                td
+                                   button(onClick='test2(\"#{id1}\")',class="btn btn-primary ") submit to grade
+       script.
+            var select = document.getElementById("selectTheme");
+            var options = ["textmate", "eclipse", "monokai", "twilight", "clouds"];
+            for(var i = 0; i < options.length; i++) {
+              var opt = options[i];
+              var el = document.createElement("option");
+              el.textContent = opt;
+              el.value = opt;
+              select.appendChild(el);
+            }
+            var editor = ace.edit("editor")
+            editor.getSession().setTabSize(2)
+             var theme = document.getElementById("theme");
+             if (theme.value !=null && theme.value !=undefined && theme.value!="Choose a theme"&& theme.value !="undefined")
+             { 
+                editor.setTheme("ace/theme/"+theme.value);
+                select.value=theme.value;
+                saveTheme(this.value);
+             }
+             else
+             { 
+                editor.setTheme("ace/theme/textmate");
+                select.value="textmate";
+             }
+            var desc=document.getElementById("description").value.replace(/"/g, "'");
+            document.querySelector('div[name=des1]').innerHTML= ""+desc;
+            saveMode("java");
+            editor.getSession().setMode("ace/mode/java")
+            document.querySelector('input[name=code2]').value=editor.getValue()
+            editor.setFontSize(12);
+            select.addEventListener('change', function() {
+                editor.setTheme("ace/theme/"+this.value)
+                saveTheme(this.value);
+             });
+             
+            editor.getSession().on('change', function(e) {
+                  document.querySelector('input[name=code2]').value=editor.getValue()
+                
+                })

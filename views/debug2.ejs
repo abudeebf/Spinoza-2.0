@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html>
+<title>Spinoza</title>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/doc/doc_brython.css">
+
+<link rel="stylesheet" href="/console.css">
+<link rel='stylesheet', href='/stylesheets/style.css'>
+<link href='/bootstrap-3.0.0/dist/css/bootstrap.css', rel='stylesheet'>
+<link href='/bootstrap-3.0.0/examples/starter-template/starter-template.css', rel='stylesheet'>
+<script src='/bootstrap-3.0.0/assets/js/html5shiv.js'></script>
+
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/javascripts/bootstrap.js"></script>
+<script src="/javascripts/bootstrap.min.js"></script>
+<script src="/javascripts/jsdiff.js"></script>
+
+<script src="/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="/ace/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+<script src="/ace/mode-python3.js" type="text/javascript" charset="utf-8"></script>
+<script src="/ace/snippets/python.js" type="text/javascript" charset="utf-8"></script>
+
+
+<script type="text/javascript" src="/src/brython_builtins.js"></script>
+<script type="text/javascript" src="/src/version_info.js"></script>
+<script type="text/javascript" src="/src/py2js.js"></script>
+<script type="text/javascript" src="/src/py_object.js"></script>
+<script type="text/javascript" src="/src/py_type.js"></script>
+<script type="text/javascript" src="/src/py_utils.js"></script>
+<script type="text/javascript" src="/src/py_builtin_functions.js"></script>
+<script type="text/javascript" src="/src/py_exceptions.js"></script>
+<script type="text/javascript" src="/src/py_range_slice.js"></script>
+<script type="text/javascript" src="/src/py_bytes.js"></script>
+<script type="text/javascript" src="/src/py_set.js"></script>
+<script type="text/javascript" src="/src/js_objects.js"></script>
+<script type="text/javascript" src="/src/stdlib_paths.js"></script>
+<script type="text/javascript" src="/src/py_import.js"></script>
+
+<script type="text/javascript" src="/src/py_string.js"></script>
+<script type="text/javascript" src="/src/py_int.js"></script>
+<script type="text/javascript" src="/src/py_long_int.js"></script>
+<script type="text/javascript" src="/src/py_float.js"></script>
+<script type="text/javascript" src="/src/py_complex.js"></script>
+<script type="text/javascript" src="/src/py_dict.js"></script>
+<script type="text/javascript" src="/src/py_list.js"></script>
+<script type="text/javascript" src="/src/py_generator.js"></script>
+<script type="text/javascript" src="/src/py_dom.js"></script>
+
+<script type="text/javascript" src="/src/builtin_modules.js"></script>
+<script type="text/javascript" src="/src/py_import_hooks.js"></script>
+<script type="text/javascript" src="/src/async.js"></script>
+<!-- Javascript code needed to run tests included in dom.py -->
+
+
+<script type="text/python3" id="tests">
+import time
+import sys
+import traceback
+import dis
+import json
+
+from javascript import JSObject, console
+from browser import document as doc, window, alert, console, prompt
+from browser import timer
+from browser import editor, brython_test_utils as utils
+from browser.local_storage import storage
+ 
+
+
+
+script_num = -1
+failed = []
+t_start = None
+x=0
+_jquery=JSObject(window.jQuery)
+def run():
+	name="mytable"
+	if(_jquery("#" + name).length > 0): 
+		_jquery("#" + name).remove();
+	global output
+	doc["console"].value = ''
+	_jquery('#tabs a[href="#tab2"]').tab('show');
+	src = editor.editor.getValue()
+	if storage is not None:
+		storage["py_src"] = src
+	try:
+		state, t0, t1, _ = utils.run(src);
+		if(state==1):
+			output = doc["console"].value
+			doc['console'].value=''
+			sol=_jquery('#sol').val();
+			unitTest=_jquery('#unitTest1').val();
+			if(len(sol.strip())>0 and len(unitTest.strip())>0 ):
+				w=createUnitTest(output);
+				doc['console'].value=output
+			
+	
+		print('<completed in %6.2f ms>' % ((t1 - t0) * 1000.0))
+	except Exception:
+		state=0;	
+	
+	return state
+
+
+
+             
+
+
+
+def fixedTest(runFixedCode,output,retype):
+	try:
+		state, t0, t1, _ = utils.run(runFixedCode)
+	except Exception:
+		state=0;
+	if(state==1):
+		testResult=doc['console'].value.split('===/=ResUltHey==/=')[1];
+		testresults=testResult.split("^^^(^^");
+		if(retype=="on"):
+			range1=3
+		else:
+			range1=4
+		testSize=(len(testresults)-1)/range1
+		if(len(testresults)>0):
+			count=0;
+			result=[]
+			for i in range(0, len(testresults)-1, range1):
+				if(range1==4):
+					if(testresults[i+3]=="True"):
+						count=count+1;
+				else: 
+					if(testresults[i+1]==testresults[i+2]):
+						count=count+1;
+			if(count==testSize):
+				percentage=100
+			else:
+				percentage=count/testSize*100
+				state=2;
+	else:
+		state = 0
+	
+	return state	
+def returnTest(pNumbers,methodname):
+	
+	add="\n\ttestSize=len(testvalues);"
+	add=add+"\n\tfor i in range(0,testSize):\n\t\t"
+	add=add+"\n\t\ttry:"
+	add=add+"\n\t\t\tvalue1=solution";
+	if(pNumbers==1):
+
+		parmeters="(deepcopy(testvalues[i])"
+		printPar="print(str(testvalues[i])"
+		exceptionprint="print(str(testvalues[i])"
+	else:
+		parmeters="(deepcopy(testvalues[i][0])"
+		printPar="print(str(testvalues[i][0])"
+		exceptionprint="print(str(testvalues[i][0])"
+		for j in range(1,pNumbers):
+			parmeters=parmeters+",testvalues[i]["+str(j)+"]"
+			printPar=printPar+"+\", \"+str(testvalues[i]["+str(j)+"])" 
+			exceptionprint=printPar;
+	parmeters=parmeters+")"
+	add=add+parmeters+"\n\t\t\tvalue2="+methodname+parmeters
+	add=add +"\n\t\t\tif(type(value1)==type(value2) and str(type(value1))==\"<class 'float'>\"):\n\t\t\t\tmatch=isclose(value1,value2)"
+	add=add+"\n\t\t\telif(type(value1)!=type(value2)):\n\t\t\t\tmatch=False"
+	add=add+"\n\t\t\telse:\n\t\t\t\tmatch=value1==value2"
+	add=add+"\n\t\t\tif(match):\n\t\t\t\tcount=count+1\n\t\t\t"
+	printPar=printPar+"+\"^^^(^^\"+str(value1)+\"^^^(^^\"+str(value2)+\"^^^(^^\"+str(match)+\"^^^(^^\")"
+	add=add+printPar;
+	add=add+"\n\t\texcept Exception:\n\t\t\t"+exceptionprint+"+\"^^^(^^\"+str(value1)+\"^^^(^^\"+str(traceback.format_exc()).split(\'\\n\')[-2]+\"^^^(^^False^^^(^^\")"
+	add=add+"\n\tif(count==testSize):\n\t\tprint(\"Passed All Test\")\n\telse:\n\t\tprint( str(count)+\" from \"+str(testSize)+\" Tests Passed \" );\ncheck()"
+	return add;
+
+def voidTest(pNumbers,methodname):
+	add="\n\ttestSize=len(testvalues);"
+	add=add+"\n\tfor i in range(0,testSize):\n\t\t"
+	add=add+"\n\t\ttry:\n\t\t\t"
+	if(pNumbers==1):
+		parmeters="(deepcopy(testvalues[i])"
+		printPar="print(str(testvalues[i])"
+	else:
+		parmeters="(deepcopy(testvalues[i][0])"
+		printPar="print(str(testvalues[i][0])"
+		for j in range(1,pNumbers):
+			parmeters=parmeters+",deepcopy(testvalues[i]["+str(j)+"])"
+			printPar=printPar+"+\", \"+str(testvalues[i]["+str(j)+"])"
+	add=add+printPar+")\n\t\t\tprint(\"^^^(^^\")";
+	add=add+"\n\t\t\t"+methodname;    
+	parmeters=parmeters+")"
+	add=add+parmeters+"\n\t\t\tprint(\"^^^(^^\")\n\t\t\tsolution"+parmeters+"\n\t\t\tprint(\"^^^(^^\")\n\t\texcept Exception:\n\t\t\tprint(str(traceback.format_exc()).split(\'\\n\')[-2])\n\t\t\tprint(\"^^^(^^\")\n\t\t\tsolution"+parmeters+"\n\t\t\tprint(\"^^^(^^\")\ncheck()"
+
+	return add;
+
+def save():
+	_jquery.post(_jquery('#host').val()+"saveproblem",{'pid':_jquery('#pid').val(), 'sol':editor.editor.getValue()});
+
+def createUnitTest(output):
+		runcode="";
+		src=editor.editor.getValue()
+		sol=_jquery('#sol').val();
+		pNumbers=int(_jquery('#pNumbers').val());
+		unitTest=_jquery('#unitTest1').val();
+		randomClass="class Random:\n\tdef __init__(self, seed):\n\t\tself.seed=seed;\n\t\tself.m=2**32;\n\t\tself.a=1103515245;\n\t\tself.words=\"While drawing in class to avoid listening to a story from his painfully boring teacher at Stagwood School, 12-year old Cal sees a frog staring at him through the window. Odder than that is the fact that this frog happens to be wearing glasses. Cal and his best friend, the tactless but loyal Soy, learn that the frog (who prefers the name Deli) has sought them out for a reason. When a school administrator named Ream reveals himself to be a dragon, the boys discover that fairytales are real, and that there is magic afoot in Stagwood. With Ream on their tail, the trio must unearth a powerful tool protected by riddles and rile (the magic that fuels nightmares) to save the fate of all fairytales past. Their only means on conveyance, Cal's now-flying bed, takes them on a journey beyond the home of the fairies (a cloud floating somewhere over Iceland) to set things right. But, before Cal can defeat Ream and his kidnapped army of fairies, he has to deal with Soy's knack for arguing with magical creatures, discover the truth about Deli's identity, and earn his place as the hero of the story. The Guardians of Lore is a middle grade novel that centers around two life-long friends, infusing humor and fantasy-based riddles into a modern fairytale.\"\n\t\tself.words=self.words.split(\" \")\n\t\tself.c = 12345;\n\tdef randInt(self,lo,hi):\n\t\tseed = (self.a * self.seed + self.c) % self.m;\n\t\trange=hi-lo+1;\n\t\tself.seed+=1;\n\t\treturn int(seed % range + lo);\n\tdef randDouble(self):\n\t\tseed = (self.a * self.seed + self.c) % self.m;\n\t\tself.seed+=1;\n\t\treturn (seed/self.m)\n\tdef randBol(self):\n\t\tif(self.randDouble()>.5):\n\t\t\treturn True;\n\t\telse:\n\t\t\treturn False;\n\tdef randStr(self):\n\t\treturn self.words[self.randInt(0,len(self.words)-1)];"
+		
+		methodname=_jquery('#methodname').val();
+		retype=_jquery('#retype').val();
+		runcode= randomClass+"\n"+unitTest+"\n"+src +"\n" +sol +"\n";
+		seed=str(time.time()%60);
+		add="from copy import deepcopy\nimport traceback\ndef isclose(a, b, rel_tol=1e-01, abs_tol=0.0):\n\treturn abs(a-b) <= .05\ndef check():\n\ttestvalues=unitTest("+seed+");\n\tcount=0;\n\tprint(\"===/=ResUltHey==/=\");\n\t"
+		addfixed="from copy import deepcopy\nimport traceback\ndef isclose(a, b, rel_tol=1e-01, abs_tol=0.0):\n\treturn abs(a-b) <= .05\ndef check():\n\ttestvalues=unitTest(200);\n\tcount=0;\n\tprint(\"===/=ResUltHey==/=\");\n\t"
+		if(retype=="on"):
+			v=voidTest(pNumbers,methodname)
+			add=add+v
+			addfixed=addfixed+v;
+		else:
+			returnm=returnTest(pNumbers,methodname)
+			add=add+returnm
+			addfixed=addfixed+returnm
+
+		runFixedCode=runcode+addfixed
+		runcode=runcode+add;
+		m=fixedTest(runFixedCode,output,retype)
+		if(m==0):
+			result=[]
+			result.append(str(doc['console'].value))
+			if(doc['console'].value.find("NameError: solution")>-1):
+				doc['console'].value="run time error in Testing\n"+ "please name the solution method def solution\n"
+			elif(str(doc['console'].value).find("===/=ResUltHey==/=")> -1):
+				doc['console'].value=str(doc['console'].value).split("===/=ResUltHey==/=")[0]
+				doc['console'].value=doc['console'].value+ "\nrun time error in Testing\n"+" You may have infinite loop"
+			else:
+				doc['console'].value="run time error in Testing\n"+ doc['console'].value[doc['console'].value.index("Traceback (most recent call last)"):]
+			showError=1
+			_jquery('#tabs a[href="#tab2"]').tab('show');
+		else:
+			showError=0
+			testResult=doc['console'].value.split('===/=ResUltHey==/=')[1];
+			testresults=testResult.split("^^^(^^");
+			if(len(testresults)>0):
+
+				name="mytable"
+				if(_jquery("#" + name).length > 0): 
+					_jquery("#" + name).remove();
+               
+				table = _jquery('<table id =' + name + '></table>').addClass("table-bordered table");
+				row = _jquery('<tr></tr>').addClass("badge-warning");
+				row.append(_jquery('<th></th>').text("parameters"));
+				row.append( _jquery('<th></th>').text("expected"));
+				row.append( _jquery('<th></th>').text("Your result"));
+				
+				row.append(_jquery('<th></th>').text("match"));
+				row.append(_jquery('<th></th>').text("comment"));
+				table.append(row);
+				if (retype !="on"):
+					for i in range(0, len(testresults)-1, 4):
+						if(testresults[i+3].strip()=='False'):
+							row=_jquery('<tr></tr>').addClass("alert-danger");
+						else:
+							row=_jquery('<tr></tr>').addClass("success");
+						for n in range(0, 4):
+							if(n==0):
+								row.append(_jquery('<td></td>').html(testresults[i+n][1:].replace("\n", "<br />")));
+							else:
+								row.append(_jquery('<td></td>').html(testresults[i+n].replace("\n", "<br />")));
+							if (n==3):
+								if(testresults[i+3].strip()=='False'):
+									if(len(testresults[i+1])>0 and testresults[i+1][len(testresults[i+1])-1]==("\n") and len(testresults[i+2])>0 and  testresults[i+2][len(testresults[i+2])-1]!=("\n")):
+										row.append(_jquery('<td></td>').text( " [expected contains \\n] at the end "));
+									elif (len(testresults[i+1])>0 and testresults[i+1][len(testresults[i+1])-1]!=("\n") and len(testresults[i+2])>0 and testresults[i+2][len(testresults[i+2])-1]==("\n")):
+										row.append(_jquery('<td></td>').text( " [expected does not contains \\n] at the end "));
+									elif (len(testresults[i+1])>0 and testresults[i+1][len(testresults[i+1])-1]==" " and len(testresults[i+2])>0 and testresults[i+2][len(testresults[i+2])-1]!=" "):
+										row.append(_jquery('<td></td>').text( " [[expected contains]] \"\" at the end"));
+									elif (len(testresults[i+1])>0 and testresults[i+1][len(testresults[i+1])-1]!=" " and len(testresults[i+2])>0 and testresults[i+2][len(testresults[i+2])-1]==" "):
+										row.append(_jquery('<td></td>').text( " [[expected does not contains]] \"\" at the end"));
+									else:
+										row.append(_jquery('<td></td>').text(" not the same"));
+								else:
+									row.append(_jquery('<td></td>').text(""));
+						table.append(row);
+					row = _jquery('<tr></tr>').addClass("badge-warning");
+					if(m==2 and "Passed All Test".strip()==testresults[len(testresults)-1].strip() ):
+						row.append(_jquery('<td colspan="5"></td>').text(testresults[len(testresults)-1] +" in this session but not the secret test"));
+					else:
+						row.append(_jquery('<td colspan="5"></td>').text(testresults[len(testresults)-1]));
+					table.append(row);
+				else:
+					count=0;
+				    
+					for i in range(0, len(testresults)-1, 3):
+						if(testresults[i+1]!=testresults[i+2]):
+							row=_jquery('<tr></tr>').addClass("alert-danger");
+							flag=False;
+						else:
+							row=_jquery('<tr></tr>').addClass("success");
+							flag=True
+							count=count+1;
+						for n in range(0, 3):
+							
+							if(n!=1 and n!=2):
+								row.append(_jquery('<td></td>').html(testresults[i+n][1:].replace("\n", "<br />")));
+							if(n==1):
+								row.append(_jquery('<td></td>').html(testresults[i+2][1:].replace("\n", "<br />")));
+							if (n==2):
+								row.append(_jquery('<td></td>').html(testresults[i+1][1:].replace("\n", "<br />")));
+								row.append(_jquery('<td></td>').html(str(flag)));
+								if(flag==False):
+									if(len(testresults[i+1])>0 and testresults[i+1][len(testresults[i+1])-1]==("\n") and len(testresults[i+2])>0 and  testresults[i+2][len(testresults[i+2])-1]!=("\n")):
+										row.append(_jquery('<td></td>').text( " [expected contains \\n] at the end "));
+									elif (len(testresults[i+1])>0 and testresults[i+1][len(testresults[i+1])-1]!=("\n") and len(testresults[i+2])>0 and  testresults[i+2][len(testresults[i+2])-1]==("\n")):
+										row.append(_jquery('<td></td>').text( " [expected does not contains \\n] at the end "));
+									elif (len(testresults[i+1])>0 and testresults[i+1][len(testresults[i+1])-1]==" " and len(testresults[i+2])>0 and testresults[i+2][len(testresults[i+2])-1]!=" "):
+										row.append(_jquery('<td></td>').text( " [[expected contains]] \"\" at the end"));
+									elif (len(testresults[i+1])>0 and testresults[i+1][len(testresults[i+1])-1]!=" " and len(testresults[i+2])>0 and testresults[i+2][len(testresults[i+2])-1]==" "):
+										row.append(_jquery('<td></td>').text( " [[expected does not contains]] \"\" at the end"));
+									else:
+										row.append(_jquery('<td></td>').text(" not the same"));
+								else:
+									row.append(_jquery('<td></td>').text(""));
+						table.append(row);
+					row = _jquery('<tr></tr>').addClass("badge-warning");
+					if(count==(len(testresults)-1)/3):
+						row.append(_jquery('<td colspan="5"></td>').text("All Test Passed"));
+					else: 
+						row.append(_jquery('<td colspan="5"></td>').text("Only " + str(count) +" from "+str((len(testresults)-1)/3) +" Passed" ));
+					table.append(row); 
+				_jquery("#tester").append(table);
+				_jquery('#tabs a[href="#tab3"]').tab('show');
+                
+		return showError
+__BRYTHON__.loop_timeout = 2
+# bindings
+doc['run'].bind('click',lambda ev:run())
+doc['pydesc'].innerHTML=_jquery('#desc').val()
+
+</script>
+<script type="text/javascript">
+
+
+var errorId_idonotknow=<%- JSON.stringify(errorId_idonotknow) %>;
+var errorId_incomplete=<%- JSON.stringify(errorId_incomplete) %>;
+var errorId_syntax=<%- JSON.stringify(errorId_syntax) %>;
+var errorId_logic=<%- JSON.stringify(errorId_logic) %>;
+var user_comment=<%- JSON.stringify(user_comment) %>;
+var errorcode<%- JSON.stringify(errorcode) %>;
+$(window).load(function () {
+    if($("#retype").val()=="on")
+    	$("#notice").text("This method should not have return statment")
+    else
+    	$("#notice").text("This method should return a value")
+   alert(errorcode)
+
+ });
+function clearall(){
+	$("input[name=bugtype]").prop('checked', false);
+	var name="commenttable"
+ 	if($("#" + name).length > 0)
+	  $("#" + name).remove();
+	if($("#mytable").length > 0)
+	  $("#mytable").remove();
+	$("#studentcomments").val("")
+	$("#console").val("")
+}
+ function firstDebugProblem(){
+ 	alert("Hi")
+ 	var editor = ace.edit("editor");
+    editor.setValue(errorcode, 0);
+    editor.setReadOnly(true)
+    if(user_comment.trim().length>0){
+		var bugtype1=user_comment[hashtest_ids[hash][hashround]].split("/////$$$$$")[0].trim()
+		var comment=user_comment[hashtest_ids[hash][hashround]].split("/////$$$$$")[1]
+	 	$("input[name=bugtype][value="+bugtype1+"]").prop('checked', true);
+	 	$("#studentcomments").val(comment);
+    }
+    pouplateOthercomments(errorId_idonotknow,errorId_incomplete,errorId_syntax,errorId_logic);
+ }
+
+ 
+ function pouplateOthercomments(dontknowarray,incompletearray,syntaxarray,logicarray){
+ 	var name="commenttable"
+ 	if($("#" + name).length > 0)
+	  $("#" + name).remove();
+	  var max=Math.max(dontknowarray.length,incompletearray.length,syntaxarray.length,logicarray.length)-1;
+	  if(max>=0){
+		  $('#tabs a[href="#tab4"]').tab('show');
+		  var table = $('<table id =' + name + '></table>').addClass("table-bordered table");
+		  var row = $('<tr></tr>').addClass("badge-warning");
+		  row.append($('<th></th>').text("I do not know \n total=" + dontknowarray.length));
+		  row.append( $('<th></th>').text("Incomplete program\n total="+incompletearray.length ));
+		  row.append( $('<th></th>').text("Syntax Error\n total="+syntaxarray.length));
+		  row.append( $('<th></th>').text("logic Error\n total="+logicarray.length));
+	      table.append(row);
+	      while (max>=0)
+	      {
+	      	row = $('<tr></tr>');
+	      	if(max<=dontknowarray.length-1)
+	      		row.append($('<td></td>').text(dontknowarray[max]));
+	      	else
+	      		row.append($('<td></td>').text(""));
+	      	if(max<=incompletearray.length-1)
+	      		row.append($('<td></td>').text(incompletearray[max]));
+	      	else
+	      		row.append($('<td></td>').text(""));
+	      	if(max<=syntaxarray.length-1)
+	      		row.append($('<td></td>').text(syntaxarray[max]));
+	      	else
+	      		row.append($('<td></td>').text(""));
+	      	if(max<=logicarray.length-1)
+	      		row.append($('<td></td>').text(logicarray[max]));
+	      	else
+	      		row.append($('<td></td>').text(""));
+	      	max=max-1;
+	      	 table.append(row);
+	      }
+	     
+	      $("#othercomment").append(table)
+	  }
+ }
+ function update(value)
+ {
+ 	$("#studentcomments").prop("disabled", value);
+ 	jQuery("input[name=bugtype]").prop("disabled", value);
+ 	$("#submitcomment").prop("disabled",value);
+ }
+ function submitComment(){
+ 	var host= $("#host").val();
+   if( $("input:radio[name='bugtype']").is(":checked")==true && ($("#studentcomments").val().trim().length>3 ||$("input:radio[name='bugtype']:checked").val()=="dontknow" )){
+      var pid=$("#pid").val();
+      var classId=$("#classId").val();
+      var problemsetId=$("#problemsetId").val();
+      var comment=$("#studentcomments").val();
+      var bugtype=$("input:radio[name='bugtype']:checked").val();
+      var error_id=$("#error_id").val();
+      parameters={pid:pid,classId:classId,problemsetId:problemsetId,comment:comment,bugtype:bugtype,error_id:error_id,hashtest:hash}
+   	 $.post(host+'addcomment',parameters ,function(data){
+   	  user_comment=bugtype+"/////$$$$$"+comment;
+      update(true)
+      pouplateOthercomments(data.previousId_idonotknow,data.previousId_incomplete,data.previousId_syntax,data.previousId_logic);
+   });
+   }
+   else
+   	alert("please choose what best describe the bug and add a comment describing the bug");
+
+ }
+</script>
+
+</head>
+
+<body onload="brython({debug:1, cache:'none', static_stdlib_import:true}),firstDebugProblem()">
+<nav class=" navbar navbar-inverse navbar-fixed-top" data-options="region:'north'">
+		<div class="container">
+				<div class="navbar-header">
+					<a class="navbar-brand" href='/profile'>Spinoza</a>
+				</div>
+				<ul class="nav navbar-nav">
+					<li ><a href="/pythonide">Python IDE</a></li>
+					<li ><a href="/classes/problems/<%=problem1.classId%>">View problem sets</a></li>    
+				</ul>
+			</div>
+		</nav>
+
+<div style="text-align:center">
+<br>
+</div>
+</center>
+
+
+<div id="container">
+<div id="left-div">
+  <div id="editor" name="editor" style="width:100% ;height:70%;"></div>
+  <p> Please choose what best describe the bug <br> Please don't refer to line numbers, just say how to fix the code in the comment</p>
+  <form action="" required>
+	  <input type="radio" name="bugtype" value="dontknow"> I do not know<br>
+	  <input type="radio" name="bugtype" value="Syntaxerror"> Syntax error<br>
+	  <input type="radio" name="bugtype" value="logicerror"> Logic error<br>
+	  <input type="radio" name="bugtype" value="incomplete"> program is not complete (only definition)<br>
+  </form>
+   <textarea rows="4" cols="50" id="studentcomments" required > </textarea><br>
+   <button id="submitcomment"class="btn btn-primary " onClick="submitComment()">Submit comment</button>
+   <button id="nextDebug"class="btn btn-primary " onClick="next()">next</button>
+   <h5 class="text-danger" id="debugnumber"> </h5> 
+</div>
+<div id="right-div">
+<button id="run"class="btn btn-primary ">run</button>
+<h5 class="text-danger" id="notice"> </h5>
+
+
+
+  
+<div class="tabbable"style="width:100%;height:95%;" id="tabs"> <!-- Only required for left/right tabs -->
+  <ul class="nav nav-tabs">
+	 <li class="active"><a href="#tab1" data-toggle="tab">Description</a></li>
+	 <li><a href="#tab2" data-toggle="tab">Output</a></li>
+	 <li><a href="#tab3" data-toggle="tab">Unit Test</a></li>
+	 
+	  <li><a href="#tab4" data-toggle="tab">Other Student comments</a></li>
+	   
+  </ul>
+  <div class="tab-content" style="width:100%;height:95%;">
+	<div class="tab-pane active" id="tab1" style="width:100%;height:95%;">
+	<div id="pydesc" style="border:thin solid #000000;padding-left:5px;background:#FFFFE0;width:95%;height:95%; font-family: Verdana, Geneva, sans-serif;
+				font-size:16px" readonly> </div></div>
+    <div class="tab-pane " id="tab2"style="width:100%;height:95%;" >
+	 <textarea id="console" autocomplete="off" style="font-family:monospace;"></textarea>
+	</div>
+	<div class="tab-pane" id="tab3">
+	 <div id='tester'style="background:white;"></div>
+	</div>
+	<div class="tab-pane" id="tab4"style="width:100%;height:95%;">
+		<h5 class="text-danger"> These comments are prone to errors but you may gain useful information to help you debug your code.</h5>
+		<div id='othercomment'style="background:white;">
+		 
+		</div>
+
+	</div>  
+    </div>
+                              
+</div>
+</div>
+  </div>
+  
+  </div>
+</div>
+</div>
+<input type="hidden" value= "<%= problem1.test_generator%>"id="unitTest1">
+<input type="hidden" value= "<%= problem1.sol%>"id="sol">
+<input type="hidden" value= "<%= problem1.pNumbers%>"id="pNumbers">
+<input type="hidden" value= "<%= problem1.methodname%>"id="methodname">
+<input type="hidden" value= "<%= problem1.retype%>"id="retype">
+<input type="hidden" value= "<%= problem1._id%>"id="pid">
+<input type="hidden" value= "<%= host%>"id="host">
+<input type="hidden" value= "<%= problem1.Description %>"id="desc">
+<input type="hidden" value= "<%= problem1.classId %>"id="classId">
+<input type="hidden" value= "<%= problem1.problemsetId %>"id="problemsetId">
+<input type="hidden" value= "<%= hash %>"id="hash">
+<input type="hidden" value= "<%= error_id %>"id="error_id">
+</body>
+</html>
+

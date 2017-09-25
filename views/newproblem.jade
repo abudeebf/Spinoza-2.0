@@ -1,0 +1,190 @@
+extends layout
+
+block content
+     script(src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js")
+     script(src="/socket.io/socket.io.js")
+     script(src="/javascripts/user-script.js")
+     script(src="/javascripts/stat-script.js")
+     script(src="/javascripts/jquery.classyedit.js")
+     script(src="/javascripts/jquery.datetimepicker.js")
+     script(type='text/javascript').
+          $(document).ready(function(){
+                $(".classy-editor").ClassyEdit();
+                
+            $("ul").filter('.nav.navbar-nav').append('<li><a href="/codeshared">View Shared Codes</li>');
+            if ("#{userinfo.role}"=="adminteacher")  
+             $("ul").filter('.nav.navbar-nav').append('<li><a href="/students">View Assignments</li>');
+             $("ul").filter('.nav.navbar-nav').append('<li><a href="/viewstudentstat/runPerProblems/AllRecords">View Students Stats</li>');
+           });
+     div.container
+        div(class="row")
+            div(class="col-sm-3 col-md-2 sidebar")
+                ul(class="nav nav-sidebar")
+                    li 
+                         h5(class="text-success") Welcome #{user.name}
+                    li
+                       h5(class="text-danger")  Currently connected
+                    li 
+                       h5(class="text-success",id="connections",style="margin-left:20px" )
+                    li 
+                      a(href="/addTA") Add new TA
+                    li 
+                      a(href="/logout") Not you logout
+            div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
+              h2 #{title}
+              form(name="addProblem",method="post",action="/addproblem" , role="form",class="form-horizontal")
+                          table(class="table table-striped table-bordered table-condensed")
+                              tr
+                                  td
+                                      label Problem Name
+                                  td
+                                      if ( assignment != undefined)
+                                        input(name="pname",type="Text" ,class="form-control", placeholder="Please enter the problem name.",value="#{assignment.pname} ")
+                                      else
+                                        input(name="pname",type="Text" ,class="form-control", placeholder="Please enter the problem name.",value="")
+                              //- tr
+                              //-     td
+                              //-         label Skill to Test
+                              //-     td  
+                                     
+                              //-           input(name="skills",type="Text" , placeholder="what is the problem test?",style='width: 200px; height: 25px;',value=" ")
+                              tr
+                                   td
+                                      label Description
+                                   td
+                                     if ( assignment != undefined)
+                                      textarea(name="des", rows=4,cols=100 ,id="u66",class="classy-editor") #{assignment.Description}
+                                     else
+                                       textarea(name="des", rows=4,cols=100 ,id="u66",class="classy-editor")                                    
+
+
+                              tr
+                                   
+                                   td 
+                                      label Method Name 
+                                   td      
+                                     if ( assignment != undefined)
+                                        input(name="pmethod",type="Text" ,class="form-control", placeholder="Please enter method name",value="#{assignment.methodname}")
+                                     else
+                                      input(name="pmethod",type="Text" ,class="form-control", placeholder="Please enter method name")
+                                      
+                              tr 
+                                   td
+                                      label Scafolding
+                                   td
+                                      if ( assignment != undefined)
+                                        div(name="scafolding1", rows=2,cols=100 ,id="editor") #{assignment.scafolding}
+                                        input(name="scafolding",type="hidden",value="#{assignment.scafolding}")
+                                        input(name="problemId",type="hidden",value="#{problemId}")
+                                        input(name="show",type="hidden",value="#{assignment.show}")
+                                        input(name="showcases2",type="hidden",value="#{assignment.showcases}")
+                                      else
+                                        div(name="scafolding1", rows=2,cols=100 ,id="editor") 
+                                        input(name="problemId",type="hidden",value="undefined")
+                                        input(name="scafolding",type="hidden",value="")
+                                      input(name="problemsetId",type="hidden",value="#{problemsetId}")
+                                      input(name="classId",type="hidden",value="#{classId}")
+                                      input(name="userinfo",type="hidden",value="#{userinfo.role}")
+                                     
+                               tr
+                                    td
+                                        label void method
+                                    td
+                                      if ( assignment != undefined)
+                                        input(type="checkbox",id="reType",value=assignment.retype,name="reType",checked=assignment.retype)
+                                      else
+                                        input(type="checkbox",id="reType",value=false,name="reType",checked=false)
+                               tr
+                                    td
+                                        label Show Test cases to students
+                                    td
+                                      if ( assignment != undefined && assignment.showcases!=undefined)
+                                        input(type="checkbox",id="showcases",value=assignment.showcases,name="showcases",checked=assignment.showcases)
+                                      else
+                                        input(type="checkbox",id="showcases",value=true,name="showcases",checked=true)
+                              tr
+                                   td
+                                      label Solution
+                                   td
+                                      if ( assignment != undefined)
+                                        div(name="sol1", rows=2,cols=100 ,id="editor3") #{assignment.sol}
+                                        input(name="sol",type="hidden",value="#{assignment.sol}")
+                                      else
+                                       div(name="sol1", rows=2,cols=100 ,id="editor3",value="def solution(a):")
+                                       input(name="sol",type="hidden",value="def solution(a):")
+                              tr 
+                                  td
+                                      label Parameters Numbers
+                                  td
+                                        if ( assignment != undefined)
+                                          input(name="pNumbers",type="text" ,class="form-control", placeholder="Please enter the number of parameters your method takes",value="#{assignment.pNumbers} ")
+                                        else
+                                          input(name="pNumbers",type="text" ,class="form-control", placeholder="Please enter the number of parameters your method takes")
+                              //- tr 
+                              //-     td
+                              //-         label Number of Tests
+                              //-     td
+                              //-           if ( assignment != undefined)
+                              //-             input(name="numTests",type="Text" ,class="form-control", placeholder="Please enter the Number of unit tests.",value="#{assignment.numTests} ")
+                              //-           else
+                              //-             input(name="numTests",type="Text" ,class="form-control", placeholder="Please enter the Number of unit tests.")
+
+                              tr
+                                   td
+                                      label Test Generator
+                                   td
+                                        if ( assignment != undefined)
+                                          div(name="test_genrator1" ,id="editor2") #{assignment.test_generator}
+                                          input(name="test_genrator",type="hidden",value="#{assignment.test_generator}")
+                                        else
+                                          div(name="test_genrator1" ,id="editor2") #{defualtTest}
+                                          input(name="test_genrator",type="hidden",value="#{defualtTest}")
+                              tr
+                                  td
+
+                                  td
+                                      button#btnSubmit(type="submit",   style='width: 200px; height: 50px;',class="btn btn-primary btn-lg") Save
+                                  
+
+                                  
+
+
+            script.
+              $('#datetimepicker_mask').datetimepicker({
+                mask:'9999/19/39 29:59',
+                formatTime:'h:a'
+                });
+                $('input[name=pclass]').on("change paste", function() {
+                    var x=$('input[name=code2]').val().replace("public class Assignment {", "public class " + $('input[name=pclass]').val() + "{") 
+                   
+                  editor1.setValue(x,1) 
+                });
+                $('input[name=pmethod]').on("change paste", function() {
+                    var x=$('input[name=code2]').val().replace("public static int solution(int x){", "public static int " + $('input[name=pmethod]').val() + "(int x){") 
+                   
+                  editor1.setValue(x,1) 
+                });
+                var editor1 = ace.edit("editor")
+                var editor2 = ace.edit("editor2")
+                var editor3=ace.edit("editor3")
+                editor1.getSession().setTabSize(2)
+                editor1.setTheme("ace/theme/monokai")
+                editor1.getSession().setMode("ace/mode/python")
+                editor2.getSession().setTabSize(2)
+                editor2.setTheme("ace/theme/monokai")
+                editor2.getSession().setMode("ace/mode/python")
+                editor3.getSession().setTabSize(2)
+                editor3.setTheme("ace/theme/monokai")
+                editor3.getSession().setMode("ace/mode/python")
+                document.querySelector('input[name=scafolding]').value=editor1.getValue()
+                document.querySelector('input[name=test_genrator]').value=editor2.getValue()
+                document.querySelector('input[name=sol]').value=editor3.getValue()
+                 editor2.getSession().on('change', function(e) {
+                          document.querySelector('input[name=test_genrator]').value=editor2.getValue()
+                          })
+                editor1.getSession().on('change', function(e) {
+                          document.querySelector('input[name=scafolding]').value=editor1.getValue()
+                          });
+                 editor3.getSession().on('change', function(e) {
+                          document.querySelector('input[name=sol]').value=editor3.getValue()
+                          })

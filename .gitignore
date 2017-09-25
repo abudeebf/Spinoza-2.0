@@ -1,0 +1,17 @@
+*~
+.DS_Store
+users
+*csv
+*txt
+Test*
+allstudets*
+Graph
+data
+newproblem
+*.log
+s1*
+s2*
+test2.ejs
+export.js
+index.js
+sshgithub*

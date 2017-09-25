@@ -1,0 +1,88 @@
+extends layout
+block content
+  script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+  script(src="/javascripts/main.js")
+  script(src="/socket.io/socket.io.js")
+  script(src="/javascripts/user-script.js")
+  script(src="/javascripts/stat-script.js")
+  script(type='text/javascript').
+    $(document).ready(function(){
+        $("ul").filter('.nav.navbar-nav').append('<li><a href="/classes/problems/#{classId}">View Problem set</li>');
+        $("ul").filter('.nav.navbar-nav').append('<li><a href="/classes/problems/#{classId}/#{problems.problemsetId}">Back to problem set</li>');
+        $("ul").filter('.nav.navbar-nav').append('<li><a href="/viewstudentstat/runPerProblems/AllRecords">View Students Stats</li>');
+     
+     setInterval(function() { 
+         location.reload();
+
+        }, 10000);
+
+    });
+  
+  div.container
+    div(class="row")
+      div(class="col-sm-3 col-md-2 sidebar")
+              ul(class="nav nav-sidebar")
+                li 
+                    h5(class="text-success") Welcome #{user.name}
+                li
+                   h5(class="text-danger")  Currently connected
+                li 
+                   h5(class="text-success",id="connections",style="margin-left:20px" )
+                li
+                  a(href="/newproblem")  Add new Homework
+                li
+                  a(href="/newexcersise") Add new Class Exercise
+                li 
+                  a(href="/addTA") Add new TA
+                li 
+                  a(href="/logout") Not you logout
+      div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
+        h3.
+         #{problems.pname } Submission List
+        p= "There are " + studentNo +" students"
+        p= "There are " + resultlength +" different solutions"
+        div
+           label Show Students Names
+           
+            if (show =="true" || show==true)
+              input(type="checkbox",id="show",value=true,name="show", checked=true)
+            else
+              input(type="checkbox",id="show",value=false,name="show",checked=false)
+          button(onClick="reload(\"#{classId}\",\"#{problems._id}\")", class="btn btn-primary btn-sm", style="margin-left:5px") Refresh 
+        Table(class="table  table-bordered table-condensed")
+          tr
+             td Solution # 
+             td Matching solutions #
+             td percentage
+             if ( show == "true")
+              td Students Names
+           if(keyresult1 !=undefined)
+            each i , r in keyresult1 
+             
+             tr 
+                 td 
+                    a(href="/#{classId}{}#{id}{}#{i}")=  "Solution " + (r+1) 
+                 td  
+                    p= result1[i]
+                 td
+                   p= hashpercent[i]
+                  if ( show == "true")
+                   td 
+                      p= students[i]
+           if(keyresult2 !=undefined) 
+             each c , i2 in keyresult2
+
+                tr(class ="danger")
+                  td
+                     if (keyresult1!=undefined)
+                       a(href="/#{classId}{}#{id}{}#{c}")= " solution " + (keyresult1.length+i2+1)
+                     else
+                        a(href="/#{classId}{}#{id}{}#{c}")= " solution " + (i2+1) 
+                  td 
+                     p= result2[c]
+                  td 
+                     p=0
+                   if ( show == "true")
+                    td 
+                       p=compilererrors[c]
+

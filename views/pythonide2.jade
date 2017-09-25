@@ -1,0 +1,125 @@
+extends layout
+
+block content
+		script(src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js")
+		script(src="/javascripts/main.js")
+		script(src="/socket.io/socket.io.js")
+		script(src="/javascripts/user-script.js")
+		script(src="/javascripts/stat-script.js")
+		script(src="http://www.skulpt.org/static/skulpt.min.js")
+		script(src="http://www.skulpt.org/static/skulpt-stdlib.js")
+		script(type='text/javascript').
+			$(document).ready(function(){
+
+			$("ul").filter('.nav.navbar-nav').append('<li><a href="/codeshared">View Shared Codes</li>');
+			$("ul").filter('.nav.navbar-nav').append('<li><a href="/students">View Assignments</li>');
+			$("ul").filter('.nav.navbar-nav').append('<li><a href="/viewstudentstat/runPerProblems/AllRecords">View Students Stats</li>');
+			});
+			function outf(text) { 
+				var mypre = document.getElementById("output"); 
+				mypre.innerHTML = mypre.innerHTML + text; 
+			} 
+			function builtinRead(x) {
+					if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+					throw "File not found: '" + x + "'";
+					return Sk.builtinFiles["files"][x];
+			}
+			// Here's everything you need to run a python program in skulpt
+			// grab the code from your textarea
+			// get a reference to your pre element for output
+			// configure the output function
+			// call Sk.importMainWithBody()
+			function runit() { 
+				var editor = ace.edit("editor");
+				var prog = editor.getValue(); 
+				var mypre = document.getElementById("output"); 
+				mypre.innerHTML = ''; 
+				Sk.pre = "output";
+				Sk.configure({output:outf, read:builtinRead}); 
+				(Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'mycanvas';
+				var myPromise = Sk.misceval.asyncToPromise(function() {
+					return Sk.importMainWithBody("<stdin>", false, prog, true);
+				});
+				myPromise.then(function(mod) {
+					console.log('success');
+				},
+				function(err) {
+					outf(err.toString());
+					console.log(err.toString());
+				});
+			} 
+		div.container
+			div(class="row")
+				div(class="col-sm-3 col-md-2 sidebar")
+					ul(class="nav nav-sidebar")
+						li 
+							h5(class="text-success") Welcome #{user.name}
+						li
+							h5(class="text-danger")  Currently connected
+						li 
+							h5(class="text-success",id="connections",style="margin-left:20px" )
+						li
+							a(href="/newproblem")  Add new Homework
+						li
+							a(href="/newexcersise") Add new Class Exercise
+						li 
+							a(href="/addTA") Add new TA
+						li 
+							a(href="/logout") Not you logout
+			div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
+				h3 Python IDE
+				table
+					tr
+					
+						td
+							select(id="selectTheme",style="margin-left:5px")
+							option choose a theme
+							button(id="run",class="btn btn-primary btn-sm ",style="margin-left:5px",onclick="runit()") Run	   
+					tr
+						td
+								div( rows=20,cols=10 ,id="editor",style="border:thick solid #000000")
+					tr
+						td
+							div(class="tabbable")
+								ul(class="nav nav-tabs" id="tabs")
+									li(class="active")
+										a(href="#output",data-toggle="tab") Output
+									li
+										a(href="#mycanvas",data-toggle="tab") Graphic Output
+									li 
+										a(href="#fileupload",data-toggle="tab") File Uploader
+							div(class="tab-content")
+								pre( id="output" class="tab-pane active",name="result" style="margin-left:2px;font-family:monospace;") 
+								div(id="mycanvas" class="tab-pane" name="mycanvas")
+								div(class="tab-pane",id="fileupload",name="fileupload")
+									form(action="/upload" enctype="multipart/form-data" method="post",role="form",class="form-horizontal") 
+										input(type="file",name="file",class="form-control",id="file")
+										input(type="submit", value="Upload",class="btn btn-primary form-control")
+										hr
+										div(id="files",name="files")
+										tr
+										td 
+							
+								
+		script.
+			var select = document.getElementById("selectTheme");
+			var options = ["textmate", "eclipse", "monokai", "twilight", "clouds"];
+			for(var i = 0; i < options.length; i++) {
+				var opt = options[i];
+				var el = document.createElement("option");
+				el.textContent = opt;
+				el.value = opt;
+				select.appendChild(el);
+			}
+			var editor = ace.edit("editor");
+			editor.getSession().setTabSize(2);
+			//alert(theme.value)
+			editor.setTheme("ace/theme/textmate");
+			select.value="textmate";
+			saveTheme("textmate");
+			editor.getSession().setMode("ace/mode/python")
+			editor.setFontSize(15);
+			select.addEventListener('change', function(){
+				editor.setTheme("ace/theme/"+this.value)
+				//saveTheme(this.value);
+			});			  

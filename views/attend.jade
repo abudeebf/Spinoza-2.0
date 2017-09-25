@@ -1,0 +1,225 @@
+extends layout
+block content
+  link(rel='stylesheet', href='/stylesheets/viewstat.css')
+  link(rel="stylesheet",href="/stylesheets/bootstrap-dropdown-checkbox.css")
+  script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+  script(src="/socket.io/socket.io.js")
+  script(src="/javascripts/jquery.datetimepicker.js")
+  script(src="/javascripts/user-script.js")
+  script(src="/javascripts/stat-script.js")
+  script(src="/javascripts/main.js")
+  script(src="/javascripts/bootstrap-dropdown-checkbox.js")
+  script(type='text/javascript').
+     function absent(){
+      var user_runNo=!{JSON.stringify(user_runNo)};
+      var user_range_Pid=!{JSON.stringify(user_range_Pid)};
+      var user_percentage=!{JSON.stringify(user_percentage)};
+      var users=!{JSON.stringify(users)};
+      var noattend=""
+      var number=0;
+      for (var m in users){
+         if (user_runNo[m]==undefined  || user_runNo[m].length==0){
+          noattend=noattend+m+","
+          number+=1;
+        }
+        }
+        if(number>0)
+        document.getElementById("absentvalue").value=noattend.substring(0, noattend.length-1);
+        $("#total").text("Total Absent students=" +number)
+        if(noattend.length>0)
+          return true
+        else
+          return false
+     }
+     function getemails(){
+      var correctnumber=$("#correctNumber").val();
+      var user_percentage=!{JSON.stringify(user_percentage)};
+      var selectedStudents="";
+      var selectedNumber=0
+      var absentstudents= $("#absentvalue").val().split(",")
+      for (var m in user_percentage)
+        if (user_percentage[m]<correctnumber && absentstudents.indexOf(m)<0 ){
+          selectedStudents=selectedStudents+m+",";
+          selectedNumber=selectedNumber+1;
+          }
+      if(selectedNumber>0){
+         document.getElementById("selectedStudents").value=selectedStudents.substring(0, selectedStudents.length-1);
+          $("#sendemail").show();}
+        $("#selectedStudentstotal").text("Total selected students=" +selectedNumber)
+     }
+     $(document).ready(function(){
+         if($("#d1").val() != "undefined" &&$("#d1").val() !=undefined ){
+         var d1=new Date($("#d1").val());
+         var d2=new Date($("#d2").val());
+        $('#datetimepicker_mask').datetimepicker({
+              value:(d1.getMonth()+1)+"/"+d1.getDate()+"/"+d1.getFullYear() + " " + d1.getHours()+":"+d1.getMinutes(),
+              timepicker:true,
+              format:'m/d/y H:i'
+            });
+        $('#datetimepicker_mask2').datetimepicker({
+              value:(d2.getMonth()+1)+"/"+d2.getDate()+"/"+d2.getFullYear()+ " " + d2.getHours()+":"+d2.getMinutes(),
+               timepicker:true,
+              format:'m/d/y H:i'
+             
+            });
+       }
+       absent();
+       //- $("ul").filter('.nav.navbar-nav').append('<li><a href="/codeshared">View Shared Codes</li>'); 
+        $("#export").on('click', function (event) {
+          exportTableToCSV.apply(this, [$('#dvData>table'), 'studentsattendance.csv']);
+        });
+      });
+     
+  div.container
+    div(class="row")
+      div(class="col-sm-3 col-md-2 sidebar")
+              ul(class="nav nav-sidebar")
+                li 
+                    h5(class="text-success") Welcome #{user.name}
+                li
+                   h5(class="text-danger")  Currently connected
+                li 
+                   h5(class="text-success",id="connections",style="margin-left:20px" )
+                li
+                  a(href="/newproblem")  Add new Practice
+                //- li
+                //-   a(href="/newexcersise") Add new Class Exercise
+                li 
+                  a(href="/addTA") Add new TA
+                li 
+                  a(href="/logout") Not you logout
+      div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
+        h3.
+          Students Attendance in Spring 2017
+        div(class="dropdown-checkbox-example dropdown-checkbox dropdown open" id="myDropdownCheckbox") 
+        label Choose the period you want the Attendance from
+        div(id="dates") 
+          label from
+          input(name="startTime",style='margin-left:5px',type="text" value="" id="datetimepicker_mask")
+          label to
+          input(name="endTime",style='margin-left:5px',type="text" value="" id="datetimepicker_mask2")
+          input(name="range",style='margin-left:5px',type="hidden", value="#{range}" id="range")
+          input(name="d1",style='margin-left:5px',type="hidden", value="#{d1}" id="d1")
+          input(name="d2",style='margin-left:5px',type="hidden", value="#{d2}" id="d2")
+          input(name="classId",style='margin-left:5px',type="hidden", value="#{classId}" id="classId")
+        button(onClick="getAttendance()", class="btn btn-primary btn-sm", style="margin-left:5px") Get Attendance
+        div(class="row",id="row")                
+                    div(class="col-xs-12 tabbable")
+                      ul(class="nav nav-tabs" id="tabs")
+                        li(class="active")
+                          a(href="#getAttendancesheet",data-toggle="tab") Attendance sheet
+                        li
+                          a(href="#absentemail",data-toggle="tab") Absent section (no Spinoza activity)
+                        li
+                          a(href="#solve",data-toggle="tab") who solved less than certain number of problems
+                      div(class="tab-content",id="tab-content")
+                        div(class="tab-pane active",name="getAttendancesheet",id="getAttendancesheet" style="overflow: scroll;height:600px;")
+                          hr
+                          a(href="#" ,class="btn btn-primary btn-sm",id="export") Export Attendance To CSV
+                          hr
+                          div(id="dvData")
+                            Table(class="table table-striped table-bordered table-condensed")
+                              tr(style="border: 1px solid black;")
+                               th  #
+                               th   Student Name
+                               th   student Email
+                               th   # problems started in given time
+                               th   # total runs button in given time
+                               th   # total correct problems in given time
+                               th   # debug comments in given time
+                               th   # of debugged problems
+                               th   Attendance
+                               if (useremails != undefined)   
+                                       each m in useremails
+                                         tr
+                                            td
+                                            td
+                                              p= users[m]
+                                            td
+                                              p= m
+                                            if (user_range_Pid[m]!=undefined)
+                                              td
+                                               p=user_range_Pid[m].length
+                                             else
+                                              td
+                                               p=0
+                                            td
+                                              if (user_runNo[m]!=undefined)
+                                               p=user_runNo[m]
+                                              else
+                                               p=0 
+                                            td
+                                              if (user_percentage[m]!=undefined)
+                                               p=user_percentage[m]
+                                              else
+                                               p=0
+                                            td 
+                                              if (debug_users[m]!=undefined)
+                                                p=debug_users[m]
+                                              else
+                                                p=0
+                                            td  
+                                              if (debugId_users[m]!=undefined)
+                                                p=debugId_users[m].size()
+                                              else
+                                                p=0
+                                             if (user_runNo[m]!=undefined && user_runNo[m]>0 )
+                                              td Yes
+                                             else
+                                              td No
+           
+                        div(class="tab-pane", id="absentemail")
+                           form(name="sendabsentemail",method="post",action="/sendabsentemail/" , role="form",class="form-horizontal")
+                                      label Absent Students 
+                                      input(name="absentvalue",id="absentvalue",type="Text" ,class="form-control",required)
+                                      label(id="total")
+                                      br
+                                      label Subject
+                                      input(name="Absentsubject",type="Text" ,class="form-control",value="Missing CS2a today",required)
+                                      br
+                                      label Message
+                                      textarea(name="AbsentMessage",rows="8" cols="140",required)
+                                      br
+                                      input(name="classId",type="hidden",value="#{classId}")
+                                      if (classId=="587e2642b9163bcd44dae90b")
+                                        button#btnSubmit(type="submit",class="btn btn-primary ") Send message
+                                      
+                              //- tr
+                              //-     td
+                              //-         label Skill to Test
+                              //-     td  
+                        div(class="tab-pane ",name="solve",id="solve")
+                          label solved less than 
+                          input(name="correctNumber" type="number" min="1" value="1" id="correctNumber" style="margin-left:5px")
+                          button(onClick="getemails()", class="btn btn-primary btn-sm", style="margin-left:5px") write a message
+                          form(name="sendemail",method="post",action="/sendemail" , role="form",class="form-horizontal",Id="sendemail",hidden)
+                                      label Selected students
+                                      input(name="selectedStudents",id="selectedStudents",type="Text" ,class="form-control",required)
+                                      label(id="selectedStudentstotal")
+                                      br
+                                      label Subject
+                                      input(name="selectedsubject",type="Text" ,class="form-control",value="",required)
+                                      br
+                                      label Message
+                                      textarea(name="selectedMessage",rows="8" cols="140",required)
+                                      br
+                                      if (classId=="587e2642b9163bcd44dae90b")
+                                        button#btnSubmit(type="submit",class="btn btn-primary ") Send message
+                  
+   script.
+          $('#datetimepicker_mask').datetimepicker({
+              timepicker:true,
+              format:'m/d/y H:i'
+             
+            });
+            $('#datetimepicker_mask2').datetimepicker({
+              timepicker:true,
+              format:'m/d/y H:i',
+              
+            });
+           
+            
+               
+            var myData =!{JSON.stringify(ps)};
+              $("#myDropdownCheckbox").dropdownCheckbox({data: myData,title: "Choose at least one problem set"
+            });

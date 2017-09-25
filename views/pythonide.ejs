@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html>
+<title>Spinoza</title>
+<head>
+	<meta charset="UTF-8">
+	<meta name="Description" content="Spinoza"/>
+	<meta name="Keywords" content="Spinoza" />
+
+	<link rel="icon" type="image/ico" href="images/favicon.ico">
+	<link rel='stylesheet', href='/stylesheets/style.css' >
+	<link rel="stylesheet" type="text/css" href="css/zocial.css">
+	<link rel="stylesheet" type="text/css" href="css/easyui.css">
+	<link rel="stylesheet" type="text/css" href="css/icon.css">
+	<link href='/bootstrap-3.0.0/dist/css/bootstrap.css', rel='stylesheet'>
+
+	<link href='/bootstrap-3.0.0/examples/starter-template/starter-template.css', rel='stylesheet'>
+	<script type="text/javascript" src='/bootstrap-3.0.0/assets/js/html5shiv.js'></script>
+	<script src='/bootstrap-3.0.0/assets/js/respond.min.js' ></script>
+ 
+	<script type="text/javascript" src="js/jquery-1.8.1.min.js"></script>
+	<script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="js/jquery.ba-resize.min.js"></script>
+
+	<script src="js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+	<script src="js/ace/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+	<script src="js/ace/mode-python3.js" type="text/javascript" charset="utf-8"></script>
+	<script src="js/ace/snippets/python.js" type="text/javascript" charset="utf-8"></script>
+
+	<script type="text/javascript" src="external/brython/brython.js"></script>
+	<script type="text/javascript" src="external/brython/py_VFS.js"></script>
+   
+
+	<script type="text/javascript" src="libs/custom_VFS.js"></script>
+
+<style type="text/css">
+#east {width:50%}
+iframe {padding: 0px; width:98%;height:98%;}
+.button-sep {
+	display:inline-block;
+	height: 16px;
+	width: 50px;
+	vertical-align:middle;
+}
+</style>
+
+<script type="text/python" src="libs/importhooks/custom_VFS.py"></script>
+
+<script type="text/python">
+from javascript import JSObject, console
+from browser import window, document, alert,timer,ajax
+import sys
+import json
+import urllib.request
+import time
+import traceback
+ 
+#this import causes loading to slow down.  See email
+# to Pierre on Dec 4th, 2014 for details..
+#import urllib.parse  
+
+import editor
+editors=editor.Editor('editortabs')
+
+sys.path.append('libs/FileSystem')
+import FileObject
+
+_jquery=JSObject(window.jQuery)
+display_message=JSObject(window.display_message)
+
+sharelist={}
+def runTheCode():
+	src=editors.getCurrentText()
+
+
+   
+
+	
+def run():
+		#find selected Tab (and get its contents)
+		_jquery('#east-tabs').tabs('select', 0)
+		document['pyconsole'].value=''
+		save()
+		src=editors.getCurrentText()
+		t0 = time.perf_counter()
+		try:
+				if(_jquery("#mytable").length > 0):
+					_jquery("#mytable" ).remove();
+
+				exec(src,globals());
+				state = 1
+				output=document['pyconsole'].value;
+				document['pyconsole'].value=''
+				sol=_jquery('#sol').val();
+				unitTest=_jquery('#unitTest1').val();
+				if(len(sol.strip())>0 and len(unitTest.strip())>0 ):
+					w=createUnitTest(output);
+					if(w==0):
+						document['pyconsole'].value=output;
+
+				else:
+					_jquery.post(_jquery('#host').val()+"addsoultiontoproblem",{'pid':_jquery('#pid').val(), 'sol':editors.getCurrentText(),'result':"",'percentage':0,"stdout":document['pyconsole'].value,"compliererror":"false",'stderr':""});
+		except Exception as exc:
+				traceback.print_exc()
+				state = 0
+				_jquery('#east-tabs').tabs('select', 1)
+
+		print('<completed in %6.2f ms>' % ((time.perf_counter()-t0)*1000.0))
+		if(state==0):
+			_jquery.post(_jquery('#host').val()+"addsoultiontoproblem",{'pid':_jquery('#pid').val(), 'sol':editors.getCurrentText(),'result':"",'percentage':0,"stdout":document['pyconsole'].value,"compliererror":"true",'stderr':""});
+		return state
+
+def fixedTest(runFixedCode,output,retype):
+	try:
+		exec(runFixedCode,globals());
+		state=1
+		testResult=document['pyconsole'].value.split('===/=ResUltHey==/=')[1];
+		testresults=testResult.split("^^^(^^");
+		if(retype=="on"):
+			range1=3
+		else:
+			range1=4
+		testSize=(len(testresults)-1)/range1
+		if(len(testresults)>0):
+			count=0;
+			result=[]
+			for i in range(0, len(testresults)-1, range1):
+				if(testresults[i+1]==testresults[i+2]):
+					count=count+1;
+				result.append(testresults[i+1])
+			if(count==testSize):
+				percentage=100
+			else:
+				percentage=count/testSize*100
+			_jquery.post(_jquery('#host').val()+"addsoultiontoproblem",{'pid':_jquery('#pid').val(), 'sol':editors.getCurrentText(),'result':str(result),'percentage':percentage,"stdout":output,"compliererror":"false",'stderr':""});
+			
+
+	except Exception as exc:
+		traceback.print_exc()
+		state = 0
+		
+	return state
+
+def returnTest(pNumbers,methodname):
+	
+	add="\n\ttestSize=len(testvalues);"
+	add=add+"\n\tfor i in range(0,testSize):\n\t\t"
+	add=add+"\n\t\tvalue1="+methodname;
+	if(pNumbers==1):
+		parmeters="(testvalues[i]"
+		printPar="print(str(testvalues[i])"
+	else:
+		parmeters="(testvalues[i][0]"
+		printPar="print(str(testvalues[i][0])"
+		for j in range(1,pNumbers):
+			parmeters=parmeters+",testvalues[i]["+str(j)+"]"
+			printPar=printPar+"+\", \"+str(testvalues[i]["+str(j)+"])" 
+	parmeters=parmeters+")"
+	add=add+parmeters+"\n\t\tvalue2=solution"+parmeters
+
+	add=add+"\n\t\tmatch=value1==value2"
+	add=add+"\n\t\tif(match):\n\t\t\tcount=count+1\n\t\t"
+	printPar=printPar+"+\"^^^(^^\"+str(value1)+\"^^^(^^\"+str(value2)+\"^^^(^^\"+str(match)+\"^^^(^^\")"
+	add=add+printPar;
+	add=add+"\n\tif(count==testSize):\n\t\tprint(\"Passed All Test\")\n\telse:\n\t\tprint( str(count)+\" from \"+str(testSize)+\" Tests Passed \" );\ncheck()"
+	return add;
+
+def save():
+	_jquery.post(_jquery('#host').val()+"saveproblem",{'pid':_jquery('#pid').val(), 'sol':editors.getCurrentText()});
+def getText():
+	document["code"].value=editors.getCurrentText()
+def voidTest(pNumbers,methodname):
+	add="\n\ttestSize=len(testvalues);"
+	add=add+"\n\tfor i in range(0,testSize):\n\t\t"
+	if(pNumbers==1):
+		parmeters="(testvalues[i]"
+		printPar="print(str(testvalues[i])"
+	else:
+		parmeters="(testvalues[i][0]"
+		printPar="print(str(testvalues[i][0])"
+		for j in range(1,pNumbers):
+			parmeters=parmeters+",testvalues[i]["+str(j)+"]"
+			printPar=printPar+"+\", \"+str(testvalues[i]["+str(j)+"])"
+	add=add+printPar+")\n\t\tprint(\"^^^(^^\")";
+	add=add+"\n\t\t"+methodname;    
+	parmeters=parmeters+")"
+	add=add+parmeters+"\n\t\tprint(\"^^^(^^\")\n\t\tsolution"+parmeters+"\n\t\tprint(\"^^^(^^\")\ncheck()"
+	return add;
+
+def createUnitTest(output):
+		runcode="";
+		src=editors.getCurrentText()
+		sol=_jquery('#sol').val();
+		pNumbers=int(_jquery('#pNumbers').val());
+		unitTest=_jquery('#unitTest1').val();
+		randomClass="class Random:\n\tdef __init__(self, seed):\n\t\tself.seed=seed;\n\t\tself.m=2**32;\n\t\tself.a=1103515245;\n\t\tself.c = 12345;\n\tdef randInt(self,lo,hi):\n\t\tseed = (self.a * self.seed + self.c) % self.m;\n\t\trange=hi-lo+1;\n\t\tself.seed+=1;\n\t\treturn int(seed % range + lo);\n\tdef randDouble(self):\n\t\tseed = (self.a * self.seed + self.c) % self.m;\n\t\tself.seed+=1;\n\t\treturn (seed/self.m)\n\tdef randBol(self):\n\t\tif(self.randDouble()>.5):\n\t\t\treturn True;\n\t\telse:\n\t\t\treturn False;"
+		
+		methodname=_jquery('#methodname').val();
+		retype=_jquery('#retype').val();
+		runcode= randomClass+"\n"+unitTest+"\n"+src +"\n" +sol +"\n";
+		seed=str(time.time());
+		add="def check():\n\ttestvalues=unitTest("+seed+");\n\tcount=0;\n\tprint(\"===/=ResUltHey==/=\");\n\t"
+		addfixed="def check():\n\ttestvalues=unitTest(200);\n\tcount=0;\n\tprint(\"===/=ResUltHey==/=\");\n\t"
+		if(retype=="on"):
+			v=voidTest(pNumbers,methodname)
+			add=add+v
+			addfixed=addfixed+v;
+		else:
+			returnm=returnTest(pNumbers,methodname)
+			add=add+returnm
+			addfixed=addfixed+returnm
+
+		runFixedCode=runcode+addfixed
+		runcode=runcode+add;
+		m=fixedTest(runFixedCode,output,retype)
+		if(m==0):
+			result=[]
+			result.append(str(document['pyconsole'].value))
+			alert(str(result))
+			if(document['pyconsole'].value.find("NameError: solution")>-1):
+				document['pyconsole'].value="run time error in Testing\n"+ "please name the solution method def solution\n"
+				_jquery.post(_jquery('#host').val()+"addsoultiontoproblem",{'pid':_jquery('#pid').val(), 'sol':editors.getCurrentText(),'result':"runtime error",'percentage':0,"stdout":"","compliererror":"false",'stderr':" run time error in Testing\n wrong in naming soultion function"});
+			else:
+				document['pyconsole'].value="run time error in Testing\n"+ document['pyconsole'].value[document['pyconsole'].value.index("Traceback (most recent call last)"):]
+				_jquery.post(_jquery('#host').val()+"addsoultiontoproblem",{'pid':_jquery('#pid').val(), 'sol':editors.getCurrentText(),'result':"runtimeerror",'percentage':0,"stdout":"","compliererror":"false",'stderr':"run time error in Testing\n"});
+			showError=1
+			_jquery('#east-tabs').tabs('select', 1)
+		else:
+			showError=0
+			document['pyconsole'].value=""
+			exec(runcode,globals());
+			testResult=document['pyconsole'].value.split('===/=ResUltHey==/=')[1];
+			testresults=testResult.split("^^^(^^");
+			if(len(testresults)>0):
+				name="mytable"
+				table = _jquery('<table id =' + name + '></table>').addClass("table-bordered table");
+				row = _jquery('<tr></tr>').addClass("badge-warning");
+				row.append(_jquery('<th></th>').text("parameters"));
+				row.append( _jquery('<th></th>').text("result"));
+				row.append( _jquery('<th></th>').text("expected"));
+				row.append(_jquery('<th></th>').text("match"));
+				row.append(_jquery('<th></th>').text("comment"));
+				table.append(row);
+				if (retype !="on"):
+					for i in range(0, len(testresults)-1, 4):
+						if(testresults[i+3].strip()=='False'):
+							row=_jquery('<tr></tr>').addClass("alert-danger");
+						else:
+							row=_jquery('<tr></tr>').addClass("success");
+						for n in range(0, 4):
+							row.append(_jquery('<td></td>').html(testresults[i+n].replace("\n", "<br />")));
+							if (n==3):
+								if(testresults[i+3].strip()=='False'):
+									if(testresults[i+1][len(testresults[i+1])-1]==("\n") and testresults[i+2][len(testresults[i+2])-1]!=("\n")):
+										row.append(_jquery('<td></td>').text( " [expected contains \\n] at the end "));
+									elif (testresults[i+1][len(testresults[i+1])-1]!=("\n") and testresults[i+2][len(testresults[i+2])-1]==("\n")):
+										row.append(_jquery('<td></td>').text( " [expected does not contains \\n] at the end "));
+									elif (testresults[i+1][len(testresults[i+1])-1]==" " and testresults[i+2][len(testresults[i+2])-1]!=" "):
+										row.append(_jquery('<td></td>').text( " [[expected contains]] \"\" at the end"));
+									elif (testresults[i+1][len(testresults[i+1])-1]!=" " and testresults[i+2][len(testresults[i+2])-1]==" "):
+										row.append(_jquery('<td></td>').text( " [[expected does not contains]] \"\" at the end"));
+									else:
+										row.append(_jquery('<td></td>').text(" not the same"));
+								else:
+									row.append(_jquery('<td></td>').text(""));
+						table.append(row);
+					row = _jquery('<tr></tr>').addClass("badge-warning");
+					row.append(_jquery('<td colspan="5"></td>').text(testresults[len(testresults)-1]));
+					table.append(row);
+				else:
+					count=0;
+				    
+					for i in range(0, len(testresults)-1, 3):
+						if(testresults[i+1]!=testresults[i+2]):
+							row=_jquery('<tr></tr>').addClass("alert-danger");
+							flag=False;
+						else:
+							row=_jquery('<tr></tr>').addClass("success");
+							flag=True
+							count=count+1;
+						for n in range(0, 3):
+							
+							row.append(_jquery('<td></td>').html(testresults[i+n].replace("\n", "<br />")));
+							if (n==2):
+								row.append(_jquery('<td></td>').html(str(flag)));
+								if(flag==False):
+									if(testresults[i+1][len(testresults[i+1])-1]==("\n") and testresults[i+2][len(testresults[i+2])-1]!=("\n")):
+										row.append(_jquery('<td></td>').text( " [expected contains \\n] at the end "));
+									elif (testresults[i+1][len(testresults[i+1])-1]!=("\n") and testresults[i+2][len(testresults[i+2])-1]==("\n")):
+										row.append(_jquery('<td></td>').text( " [expected does not contains \\n] at the end "));
+									elif (testresults[i+1][len(testresults[i+1])-1]==" " and testresults[i+2][len(testresults[i+2])-1]!=" "):
+										row.append(_jquery('<td></td>').text( " [[expected contains]] \"\" at the end"));
+									elif (testresults[i+1][len(testresults[i+1])-1]!=" " and testresults[i+2][len(testresults[i+2])-1]==" "):
+										row.append(_jquery('<td></td>').text( " [[expected does not contains]] \"\" at the end"));
+									else:
+										row.append(_jquery('<td></td>').text(" not the same"));
+								else:
+									row.append(_jquery('<td></td>').text(""));
+						table.append(row);
+					row = _jquery('<tr></tr>').addClass("badge-warning");
+					if(count==len(testresults)):
+						row.append(_jquery('<td colspan="5"></td>').text("All Test Passed"));
+					else: 
+						row.append(_jquery('<td colspan="5"></td>').text("Only " + str(count) +" from "+str((len(testresults)-1)/3) +" Passed" ));
+					table.append(row); 
+				_jquery("#tester").append(table);
+				_jquery('#east-tabs').tabs('select', 2)
+                
+		return showError
+def create_tab(content=""):
+		editors.add_editor()
+		
+def toolbar_open_file_dialog():
+		def cb(results):
+				if results['status'] == 'Error':
+					 #display a message dialog instead..
+					 display_message(results['message'])
+					 return
+
+				_filelist=results['filelist']
+				if _filelist is None:
+					 display_message('no files available')
+					 return
+
+				_jquery('#open_file_treegrid').treegrid('loadData', [_filelist])
+				_jquery('#open_file_dialog').dialog('open')
+
+		document['open_file_textbox'].value=''
+		# go retrieve a list of files a person could open
+		window._FS.listdir('/', cb)
+
+
+def save_file_as():
+		_jquery('#save_file_as_dialog').dialog('close')
+		_filename=document['save_file_as_textbox'].value
+		editors.setCurrentTabName(_filename)
+		save_file()
+
+def clear_outputs():
+		document['pyconsole'].value=''
+
+def open_url():
+		_jquery('#open_url_dialog').dialog('close')
+		_filename=document['open_url_textbox'].value
+
+		_fp, _url, _headers=urllib.request.urlopen(_filename)
+		_data=_fp.read()
+
+		if _data is None:  #there was an error (or URL doesn't exist)
+			 #show message saying file .
+			 display_message('URL not found')
+		elif isinstance(_data, str):
+			 #open new tab with file contents
+			 editors.add_editor(filename=_filename, content=_data)
+			 display_message('file loaded successfully.')
+		else: #invalid data, output error message
+			 display_message('Invalid URL.')
+
+
+def save_file():
+		def callback(_results):
+				if _results['status'] == 'Okay':
+					 display_message(_results['message'])
+				else:
+					 display_message(_results['message'])
+
+		_filename=editors.getCurrentTabName()
+		if _filename.startswith('Untitled-'):
+			 # we need to prompt for a real name
+			 _jquery('#save_file_as_dialog').dialog('open')
+			 return
+
+		if not _filename.startswith('/'):
+			 _filename='/%s' % _filename
+
+		if not _filename.startswith('/pyschool'):
+			 _filename='/pyschool%s' % _filename
+
+		_src=editors.getCurrentText()
+		_f=FileObject.FileObject()
+		_f.set_attribute('filename', _filename)
+		_f.set_attribute('contents', _src)
+
+		window._FS.save_file(_f, callback)
+
+def parse_cookie():
+		if document.cookie == '':
+			 return {}
+
+		_dict={}
+		_items=document.cookie.split('|')
+		for _item in _items:
+				alert(_item)
+				_variable, _value=_item.split('=')
+				alert(_value)
+				_dict[_variable]=_value
+		return _dict
+
+def sharelist_checkbox(fullname, obj):
+		global sharelist
+		if obj.checked:
+			 sharelist[fullname]='Y'
+		else:
+			 sharelist[fullname]='N'
+
+def open_filelist_dialog():
+		console.log("open_filelist_dialog")
+		#global sharelist
+		sharelist={}
+
+		def onClickRow(record):
+				if record['shareid'] not in ('', None):
+					 document['share_filelist_status'].text='/Shares/%s' % record['shareid']
+				else:
+					 document['share_filelist_status'].text=' '
+
+		_dict={'token': window._token, 'command': 'filelist'}
+		_fp,_,_=urllib.request.urlopen('/SharePermissions', data=_dict)
+		data=_fp.read()
+		_data=json.loads(data)
+
+		_jquery('#share_filelist_table').treegrid({'treeField':'name', 
+																							 'idField': 'id',
+																								'onClickRow': onClickRow
+																							 })
+
+		_jquery('#share_filelist_table').treegrid('loadData', [_data['files']])
+
+		_jquery('#share_filelist_dialog').dialog('open')
+
+def share_filelist_save():
+		# send list to server for it to update the list.
+		global sharelist
+		_dict={'directories': json.dumps(sharelist), 'token': window._token, 'command':'directory_access'}
+		_fp,_,_=urllib.request.urlopen("/SharePermissions", data=_dict)
+		_result=_fp.read()
+		#should return okay...
+
+		# ask for file list again.. then repopulate data grid.
+		open_filelist_dialog()
+
+def open_file_onRowClicked(row):
+		if (row._isa_file):
+			 document['open_file_textbox'].value=row.fullname
+
+_jquery('#open_file_treegrid').treegrid({'onClickRow': open_file_onRowClicked})
+
+
+		
+
+if 'script' in document.query:
+	 _script=document.query['script']
+	 document['open_url_textbox'].value=_script.replace('%2F', '/')
+	 #importing urllib.parse causes a 10-15 second slow down on Billy's machine
+	 #document['open_url_textbox'].value=urllib.parse.unquote(_script)
+	 open_url()
+
+
+
+document['loading_dialog'].style.display='none'
+
+clear_outputs()
+
+_jquery('#east-tabs').tabs('select', 0)  #allows pydiv panel to set width/height
+
+window.run=run
+window.clear_outputs=clear_outputs
+window.createUnitTest=createUnitTest
+window.voidTest=voidTest
+window.returnTest=returnTest
+window.create_tab=create_tab
+window.save_file=save_file
+window.save_file_as=save_file_as
+window.toolbar_open_file_dialog=toolbar_open_file_dialog
+window.open_filelist_dialog=open_filelist_dialog
+window.share_filelist_save=share_filelist_save
+window.sharelist_checkbox=sharelist_checkbox
+document['pydesc'].innerHTML=_jquery('#desc').val()
+
+create_tab()
+editors.setCurrentText(_jquery('#code').val())
+timer.set_interval(getText,1);
+</script>
+
+<script type="text/python" src="libs/importhooks/localstorage.py"></script>
+<script type="text/python" src="libs/importhooks/ShareHook.py"></script>
+<script type="text/python" src="libs/importhooks/FileSystemHook.py"></script>
+
+<script type="text/javascript">
+ $(window).on('beforeunload', function() {
+         
+         $.post($('#host').val()+"saveproblem",{'pid':$('#pid').val(), 'sol':$("#code").val()},function(data) {
+      
+                     
+                      });
+        });
+        window.onunload = function() { 
+          $.post($('#host').val()+"saveproblem",{'pid':$('#pid').val(), 'sol':$("#code").val()},function(data) {
+      
+                     
+                      });
+        }
+$(function(){
+			 $(window).resize(function(){
+
+					$('#container').layout('resize');
+			 });
+			
+			 $('#open_file_dialog').dialog('close');
+			 $('#save_file_as_dialog').dialog('close');
+			 $('#open_url_dialog').dialog('close');
+
+			 //eventually remove this line once database, etc are finished..
+			 $('#login_dialog').dialog('close');
+			 $('#signup_dialog').dialog('close');
+			 $('#share_filelist_dialog').dialog('close');
+			
+
+});
+
+function display_message(message){
+	$.messager.show({
+		 title:'',
+		 msg: message,
+		 showType:'show',
+		 height: 50,
+		 style:{left:0, right:'', top:'',
+			 bottom:-document.body.scrollTop-document.documentElement.scrollTop,
+		 }
+	});
+}
+
+window._full_screen=false
+
+function full_screen_toggle() {
+		if (!window._full_screen) {
+			 document.documentElement.mozRequestFullScreen()
+		} else {
+			 document.mozCancelFullScreen()
+		}
+		window._full_screen=! window._full_screen
+}
+
+// easyui (data-options) cannot bind event functions defined via brython, 
+// so we must define the function in javascript instead
+function login_type_onChange(e) {
+		_selection=$('#login_type').combobox('getValue')
+		window.login_type=__BRYTHON__.builtins.str(_selection)
+		if (_selection == 'authenticate') {
+			 $('#login_user_entry').show()
+		} else {
+			 $('#login_user_entry').hide()
+		}
+}
+
+// for some reason the python version of this file doesn't work with treegrid.
+function formatCheckBox(value, row) {
+	if (row.type == 'file') return ''
+
+	var click="sharelist_checkbox('"+row.fullname+"', this)"
+	if (value) {
+		 return '<input type="checkbox" onclick="'+click+'" checked></input>'
+	}
+
+	return '<input type="checkbox" onclick="'+click+'"></input>'
+}
+</script>
+
+</head>
+
+<body id="container" class="easyui-layout"
+			onload="brython({debug:1, cache:'browser', static_stdlib_import:true,
+											 custom_import_funcs:[import_hooks]})">		
+		<div id="east" title=" "
+				 data-options="region:'east',split:true">
+				<div class="easyui-tabs" id="east-tabs"
+						 data-options="tools:'#tab-tools-output',fit:true"> 
+						<div id="description_tab" title="Description" data-options="fit:true">
+								<div id="pydesc" style="border:thin solid #000000;padding-left:5px;background:#FFFFE0;width:98%;height:98%; font-family: Verdana, Geneva, sans-serif;
+				font-size:16px" readonly> </div>
+						</div> 
+						<div id="console_tab" title="sys.stdout" data-options="fit:true">
+								<textarea id="pyconsole" style="background:white;width:98%;height:98%"  readonly> </textarea>
+						</div>
+						<div id="unitTest_tab" title="Unit Test" data-options="fit:true">
+							<div id='tester'style="background:white;width:98%;height:98%"></div>	
+						</div> 
+                      
+						
+				</div>
+		</div>
+				<!-- <div class=" sidebar">
+					<ul class="nav nav-sidebar">
+							<li> 
+								 <h5 class="text-success"> Welcome #{user.name}</li>
+							 <li >
+								 <a href="/logout"> Not you logout</li>
+						 </ul>
+					 </div> -->
+				
+
+		<div id="tab-tools-output">
+				<a href="javascript:void(0)" onclick="clear_outputs()" title="clean output" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-clear-left'">clean output</a>
+		</div>
+		
+        
+		<div id="center" data-options="region:'center'">
+			   <input type="hidden" value= "<%= sol%>"id="code">
+			   <input type="hidden" value= "<%= problem1.test_generator%>"id="unitTest1">
+			   <input type="hidden" value= "<%= problem1.sol%>"id="sol">
+			   <input type="hidden" value= "<%= problem1.pNumbers%>"id="pNumbers">
+			   <input type="hidden" value= "<%= problem1.methodname%>"id="methodname">
+			   <input type="hidden" value= "<%= problem1.retype%>"id="retype">
+			   <input type="hidden" value= "<%= problem1._id%>"id="pid">
+			   <input type="hidden" value= "<%= host%>"id="host">
+			   <input type="hidden" value= "<%= problem1.Description %>"id="desc">
+
+				<div class="easyui-tabs" id="editortabs" data-options="tools:'#tab-tools',fit:true">
+				 </div>  
+		</div>
+		<nav class=" navbar navbar-inverse navbar-fixed-top" data-options="region:'north'">
+		<div class="container">
+				<div class="navbar-header">
+					<a class="navbar-brand" href='/profile'>Spinoza</a>
+				</div>
+				<ul class="nav navbar-nav">
+					<li ><a href="/pythonide">Python IDE</a></li>
+					<li ><a href="/classes/problems/<%=classId%>/<%=problem1.problemsetId%>">Back to problem set </a></li>
+					<li ><a href="/classes/problems/<%=classId%>">View problem sets</a></li>  
+				</ul>
+			</div>
+		</nav>
+
+		<div id="tab-tools">
+				<a href="javascript:void(0)" title="save file" class="easyui-linkbutton" 
+						data-options="plain:true,iconCls:'icon-save'" onclick="save_file()"></a>
+				<a href="javascript:void(0)" title="new tab" class="easyui-linkbutton"
+						data-options="plain:true,iconCls:'icon-add'" onclick="create_tab()" id="createtab"></a>
+				<a href="javascript:void(0)" title="run code" class="easyui-linkbutton" 
+						data-options="plain:true,iconCls:'icon-compile'" onclick="run()"></a>
+		</div>
+		<div id="loading_dialog" style="width:25px;height:25px;position:absolute;left:50%;top:50%;z-index:1000">
+			<img src="/css/images/loading.gif" width="25px" height="25px" alt="Loading..">
+		</div>
+
+</body>
+</html>

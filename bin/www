@@ -1,0 +1,42 @@
+#!/usr/bin/env node
+var debug = require('debug')('my-application');
+var app = require('../app');
+
+app.set('port',  process.env.PORT ||3004);
+var http=require('http')
+var server = http.createServer(app);
+var io = require('socket.io').listen(server);
+
+ server.listen(app.get('port'), function() {
+  debug('Express server listening on port ' + server.address().port);
+
+});
+
+
+var clients=[];
+var conLength=0;
+var clients2=[];
+
+io.sockets.on('connection', function(socket) {
+	clients2.push(socket.handshake.address);
+   console.log(socket.request.session);
+   if (clients.indexOf(socket.handshake.address)<0)
+    clients.push(socket.handshake.address);
+  if(clients.length>0)
+    conLength=clients.length;
+  else
+     conLength=0;
+  io.sockets.emit('pageview', {'connections':conLength});
+ 
+  socket.on('disconnect', function () {
+        clients2.splice(clients2.indexOf(socket.handshake.address),1);
+        if (clients2.indexOf(socket.handshake.address)<0)
+        	 clients.splice(clients.indexOf(socket.handshake.address),1);
+        if(clients.length>0)
+          conLength=clients.length;
+        else
+          conLength=0;
+        console.log("Socket disconnected");
+        io.sockets.emit('pageview', { 'connections': conLength});
+    });
+});

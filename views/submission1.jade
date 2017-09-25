@@ -1,0 +1,54 @@
+extends layout
+block content
+  script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+  script(src="/javascripts/main.js")
+  script(src="/socket.io/socket.io.js")
+  script(src="/javascripts/user-script.js")
+  script(src="/javascripts/stat-script.js")
+  div.container
+    div(class="page-header text-center")
+        p= "Welcome " + user.name
+        a(href="/problems" ,class="btn btn-default btn-sm") Back
+        a(href="/logout" ,class="btn btn-default btn-sm") Not you logout
+       
+          
+      h3.
+         Submission List
+
+      Table(class="table table-striped table-bordered table-condensed")
+          each sub , i in submissions
+
+              if (sub.compelete==true)
+                  tr(class="success")
+                     td
+                        p=  "Submission # " + (i +1)
+                     td
+                        if (sub.problemtype=="classproblem")
+
+                          a(href="/problems/javaide/#{sub.pid}/#{sub.useremail}")= " "+ sub.username 
+                        else
+                          a(href="/problems/submission/#{sub.pid}/#{sub.useremail}")= " "+ sub.username
+                     
+              else
+                  if (sub.hashvalue!=null)
+                   tr(class="success")
+                      td
+                          p=  "Submission # " + (i +1)
+                      td
+                        if (sub.problemtype=="classproblem")
+                          a(href="/problems/javaide/#{sub.pid}/#{sub.useremail}")= " "+ sub.username 
+                        else
+                          a(href="/problems/submission/#{sub.pid}/#{sub.useremail}")= " "+ sub.username
+                  else
+                     tr(class="badge-warning")
+                      td
+                          p=  "Submission # " + (i +1)
+                      td
+                        if (sub.problemtype=="classproblem")
+                          a(href="/problems/javaide/#{sub.pid}/#{sub.useremail}")= " "+ sub.username 
+                        else
+                          a(href="/problems/submission/#{sub.pid}/#{sub.useremail}")= " "+ sub.username
+                     
+                      
+                     
+

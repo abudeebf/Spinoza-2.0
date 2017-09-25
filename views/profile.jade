@@ -1,0 +1,75 @@
+html
+  head
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    meta(name='description', content='')
+    meta(name='author', content='')
+    meta(name='copyright', content='Copyright (c) 2013 ALT-F1, We believe in the projects we work on™')
+    link(rel='shortcut icon', href='/bootstrap-3.0.0/assets/ico/favicon.png')
+    title Spinoza
+    link(href='/bootstrap-3.0.0/dist/css/bootstrap.css', rel='stylesheet')
+    link(href='/bootstrap-3.0.0/examples/starter-template/starter-template.css', rel='stylesheet')
+    script(src='/bootstrap-3.0.0/assets/js/html5shiv.js')
+    script(src='/bootstrap-3.0.0/assets/js/respond.min.js')
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    link(rel="stylesheet", href="/stylesheets/jquery.datetimepicker.css")
+    link(href='http://fonts.googleapis.com/css?family=Bitter', rel='stylesheet')   
+    script(src='/javascripts/src-noconflict/ace.js')
+    script(src='/javascripts/jquery.xdomainrequest.min.js')
+    script(src='/javascripts/jQuery.XDomainRequest.js')
+    script(src='/bootstrap-3.0.0/assets/js/jquery.js').
+    script(src='/bootstrap-3.0.0/dist/js/bootstrap.min.js')
+    script(src="/socket.io/socket.io.js")
+    script(src="/javascripts/user-script.js")
+    script(src="/javascripts/stat-script.js")
+    script(src="/javascripts/main.js")
+    body
+        .navbar.navbar-inverse.navbar-fixed-top
+            .container
+                .navbar-header
+                    button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-collapse')
+                        span.icon-bar
+                        span.icon-bar
+                        span.icon-bar
+                    a.navbar-brand(href='/profile') Spinoza
+                .collapse.navbar-collapse
+                    ul.nav.navbar-nav
+                       
+
+                        
+        div.container
+            div(class="row")
+                div(class="col-sm-3 col-md-2 sidebar")
+                  ul(class="nav nav-sidebar")
+                    li 
+                        h5(class="text-success") Welcome #{user.name}
+                    if (user.role=="adminteacher")
+                        li
+                            h5(class="text-danger")  Currently connected
+                        li 
+                            h5(class="text-success",id="connections",style="margin-left:20px" )
+                    li
+                        a(href='/joincreateclass') Join or Create Class
+                   
+                    li 
+                        a(href="/logout") Not you logout
+
+                div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
+                     
+                    h3.
+                      Classes List
+
+                    div
+                         if (classesinfo.length >0 )
+                             Table(class="table table-striped table-bordered table-condensed")
+                                tr
+                                    th  Class Name
+                                    th  Code to join
+                                each section , i in classesinfo
+                                  tr 
+                                    td  
+                                        a(href="/classes/problems/#{section._id}")=  section.cname
+                                    td 
+                                        p= section.classPin
+                         else
+                            p=" You did not join any class yet "

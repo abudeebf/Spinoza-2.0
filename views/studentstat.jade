@@ -1,0 +1,160 @@
+extends layout
+block content
+  link(rel='stylesheet', href='/stylesheets/viewstat.css')
+  script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+  script(src="/socket.io/socket.io.js")
+  script(src="/javascripts/jquery.datetimepicker.js")
+  script(src="/javascripts/user-script.js")
+  script(src="/javascripts/stat-script.js")
+  script(src="/javascripts/main.js")
+  script(type='text/javascript').
+     $(document).ready(function(){
+       if($("#range").val()=="AllRecords"){
+          $('#dates').hide();
+          $("#AllRecords").prop('checked', true);
+       }
+     else
+       { 
+        $("#datetimepicker_mask").val($("#d1").val());
+        $("#datetimepicker_mask2").val($("#d2").val());
+       }
+       $("ul").filter('.nav.navbar-nav').append('<li><a href="/codeshared">View Shared Codes</li>');
+      if ("#{user.role}"=="adminteacher")  
+        $("ul").filter('.nav.navbar-nav').append('<li><a href="/students">View Assignments</li>');
+        $("ul").filter('.nav.navbar-nav').append('<li><a href="/viewstudentstat/#{classId}/name/AllRecords">View Students Stats</li>');
+        $("#export").on('click', function (event) {
+          exportTableToCSV.apply(this, [$('#dvData>table'), 'studentsStat.csv']);
+        });
+      });
+     
+  div.container
+    div(class="row")
+      div(class="col-sm-3 col-md-2 sidebar")
+              ul(class="nav nav-sidebar")
+                li 
+                    h5(class="text-success") Welcome #{user.name}
+                li
+                   h5(class="text-danger")  Currently connected
+                li 
+                   h5(class="text-success",id="connections",style="margin-left:20px" )
+                li
+                  a(href="/newproblem")  Add new Homework
+                li
+                  a(href="/newexcersise") Add new Class Exercise
+                li 
+                  a(href="/addTA") Add new TA
+                li 
+                  a(href="/logout") Not you logout
+      div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
+        h3.
+          Students Statistics in #{classname}
+        a(href="#" ,class="btn btn-primary btn-sm",id="export") Export Students Statistics To CSV
+        hr 
+        label Choose the period you want the data from
+        div
+           label All
+           input(type="checkbox",id="AllRecords",value=true,name="AllRecords",onchange="validate()") 
+        div(id="dates") 
+          input(name="startTime",style='margin-left:5px',type="text" value="" id="datetimepicker_mask")
+          input(name="endTime",style='margin-left:5px',type="text" value="" id="datetimepicker_mask2")
+          input(name="range",style='margin-left:5px',type="hidden", value="#{range}" id="range")
+          input(name="d1",style='margin-left:5px',type="hidden", value="#{d1}" id="d1")
+          input(name="d2",style='margin-left:5px',type="hidden", value="#{d2}" id="d2")
+          input(name="classId",style='margin-left:5px',type="hidden", value="#{classId}" id="classId")
+        button(onClick="RefreshStat(\"#{sort}\")", class="btn btn-primary btn-sm", style="margin-left:5px") Refresh Stats
+        div(id="dvData")
+          Table(class="table table-striped table-bordered table-condensed")
+             tr(style="border: 1px solid black;")
+               th  #
+               th  
+                 a(href="#",onClick="RefreshStat(\"name\")") Student Name
+               th 
+                 a(href="#",onClick="RefreshStat(\"email\")") student Email
+               th
+                 a(href="#",onClick="RefreshStat(\"email\")") Total debugged comments
+               th  
+                  a(href="#",onClick="RefreshStat(\"noProblem\")") Number of problems tried
+               th 
+                  a(href="#",onClick="RefreshStat(\"inclasstime\")") Number of problems tried in class time
+               th 
+                  a(href="#",onClick="RefreshStat(\"percentcorrect\")") Number of problems done correctly
+               th  
+                  a(href="#",onClick="RefreshStat(\"runPerProblems\")") Total run attempts
+               th 
+                  a(href="#",onClick="RefreshStat(\"avgRunPerProblems\")") average runPerProblem 
+               th 
+                  a(href="#",onClick="RefreshStat(\"medianTime\")") Median time to complete a problem
+              tr
+                th
+                th
+                th
+                th
+                th(title="Average Number of All problems tried per student")
+                  p= avgProblemNo
+                th(title="Average Number of all problems tried in class time per student")
+                  p= average_inclasstime
+                th(title="Average correct problems") 
+                  p=average_correct
+                th(title="average Number of a total complior and run to  all the problems")
+                  p=avgproblemrun
+                th(title="The Average of average run clicks a student do per problems")
+                  p=avgavgproblemrun
+                th(title="The Average time students took to complete a problem")
+                  if (avg_avg_time>=60)
+                    p=(avg_avg_time/60 ) +" (hours)"
+                  else
+                    p= avg_avg_time + " (minutes)"
+                    
+             each m in sorter
+               tr
+                  td
+                  td
+                    p= users[m]
+                  td
+                    p= m
+                  td 
+                    p= user_debugtotal[m]
+                  if (user_problemNo[m]<avgProblemNo)
+                    td(class ="danger") 
+                      p=user_problemNo[m]
+                  else
+                    td
+                      p=user_problemNo[m]
+                  td
+                    p=users_inclasstime[m]
+                  if (user_percentage[m]<average_correct)
+                    td(class ="danger") 
+                      p=user_percentage[m]
+                  else
+                    td
+                      p=user_percentage[m]
+                  if (user_runNo[m]>avgproblemrun && user_problemNo[m]<avgProblemNo )
+                    td(class ="danger")
+                      p=user_runNo[m]
+                  else
+                    td
+                     p=user_runNo[m] 
+
+                  td
+                    p=user_avgproblemrun[m]
+                  td
+                    if ( user_medianTime[m]>=60 )
+                      p=(user_medianTime[m]/60 ) +" (hours)"
+                    else
+                     p= user_medianTime[m] + " (minutes)"
+              
+   script.
+          $('#datetimepicker_mask').datetimepicker({
+              timepicker:false,
+              format:'m/d/y',
+              formatDate:'m/d/y'
+            });
+            $('#datetimepicker_mask2').datetimepicker({
+              timepicker:false,
+              format:'m/d/y',
+              formatDate:'m/d/y'
+            
+            });
+                                   
+                          
+                         

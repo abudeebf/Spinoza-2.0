@@ -1,0 +1,125 @@
+extends layout
+block content
+  script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+  script(src="/socket.io/socket.io.js")
+  script(src="/javascripts/user-script.js")
+  script(src="/javascripts/stat-script.js")
+  script(src="/javascripts/main.js")
+  script(type='text/javascript').
+     $(document).ready(function(){
+      $("ul").filter('.nav.navbar-nav').append('<li><a href="/codeshared">View Shared Codes</li>');
+      if ("#{user.role}"=="adminteacher")  
+        $("ul").filter('.nav.navbar-nav').append('<li><a href="/students">View Assignments</li>');
+        $("ul").filter('.nav.navbar-nav').append('<li><a href="/viewstudentstat/runPerProblems/AllRecords">View Students Stats</li>');
+      });
+      
+  div.container
+    div(class="row")
+      div(class="col-sm-3 col-md-2 sidebar")
+          ul(class="nav nav-sidebar")
+              li 
+                 h5(class="text-success") Welcome #{user.name}
+              if (user.role=="adminteacher")
+                 li
+                   h5(class="text-danger")  Currently connected
+                 li 
+                   h5(class="text-success",id="connections",style="margin-left:20px" )
+                 li
+                  a(href="/newproblem")  Add new Homework
+                 li
+                  a(href="/newexcersise") Add new Class Exercise
+                 li 
+                  a(href="/addTA") Add new TA
+               li 
+                 a(href="/logout") Not you logout
+      div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
+        h3.
+          Homework List
+        div
+          Table(class="table  table-bordered table-condensed")
+            each problem , i in problemlist
+              if(problem.problemtype!="classproblem")
+                if (user.role=="adminteacher")
+                  if (problem.pname != undefined)
+                    if(problem.show ==false )
+                        tr(class="danger")
+                            td
+                                a(href="/problems/#{problem._id}")=  problem.pname
+                            td
+                               p=  problem.skill 
+                            //- td
+                            //-      a(href="/viewgraph/#{problem._id}", class="btn btn-primary btn-sm")= "Download Graph"
+                            td
+                                 a(href="/realtimegraph/#{problem._id}/0/1/All", class="btn btn-primary btn-sm")= "View Graph"
+                            td
+                              div(class="checkbox")
+                                  label show
+                                    input(type="checkbox",id="showProblem",checked=problem.show,name="#{problem._id}",onclick='handleClick(this,"homeworks")')
+                            td 
+                                a(href="/problems/update/#{problem._id}", class="btn btn-primary btn-sm")= "Update"
+                            td 
+                                button(onClick='copy(\"#{problem._id}\")',style='width: 100px; height: 30px;',class="btn btn-primary btn-sm") Copy
+                            td 
+                                button(onClick='delete1(\"#{problem._id}\")',style='width: 100px; height: 30px;',class="btn btn-primary btn-sm") Delete
+                    else
+                        tr
+                            td
+                                a(href="/problems/#{problem._id}")=  problem.pname
+                            td
+                               p=  problem.skill 
+                            //- td
+                            //-      a(href="/viewgraph/#{problem._id}", class="btn btn-primary btn-sm")= "Download Graph"
+                            td
+                                 a(href="/realtimegraph/#{problem._id}/0/1/All", class="btn btn-primary btn-sm")= "View Graph"
+                            td
+                              div(class="checkbox")
+                                  label show
+                                    input(type="checkbox",id="showProblem",checked=problem.show,name="#{problem._id}",onclick='handleClick(this,"homeworks")')
+                            td 
+                                a(href="/problems/update/#{problem._id}", class="btn btn-primary btn-sm")= "Update"
+                            td 
+                                button(onClick='copy(\"#{problem._id}\")',style='width: 100px; height: 30px;',class="btn btn-primary btn-sm") Copy
+                            td 
+                                button(onClick='delete1(\"#{problem._id}\")',style='width: 100px; height: 30px;',class="btn btn-primary btn-sm") Delete
+                else
+                   if(problem.show==true)
+                     if (problem.pname != undefined)
+                      if (problemcompleted.indexOf(problem._id +"") >-1)
+                         
+                          tr(class="success")
+                             td
+                                  a(href="/problems/#{problem._id}")=  problem.pname
+                              td
+                                 p=  problem.skill
+                             
+                              td 
+                                 if (submitted.length >0)
+                                   if (submitted.indexOf(problem._id +"") >-1)
+
+                                     p= "Submitted at " + submittiontime[submitted.indexOf(problem._id +"")]
+                                   else
+                                     p= "No submission"
+                                 else 
+                                   p="No submission"
+                                td 
+                                  p="Not yet graded"
+
+                      else
+                           tr
+                                td
+                                    a(href="/problems/#{problem._id}")=  problem.pname
+                                td
+                                   p=  problem.skill
+                               
+                                
+                                td 
+                                 if (submitted.length >0)
+                                  if (submitted.indexOf(problem._id +"") >-1)
+                                   p= "Submitted at " + submittiontime[submitted.indexOf(problem._id +"")]
+                                  else
+                                   p= "No submission"
+                                 else 
+                                   p="No submission"
+                                td 
+                                  p="Not yet graded"
+

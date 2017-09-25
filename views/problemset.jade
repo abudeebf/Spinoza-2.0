@@ -1,0 +1,116 @@
+extends layout
+block content
+  script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+  script(src="/javascripts/main.js")
+  script(src="/socket.io/socket.io.js")
+  script(src="/javascripts/user-script.js")
+  script(src="/javascripts/stat-script.js")
+  script(type='text/javascript').
+    $(document).ready(function(){
+      if("#{userinfo.role}"=="adminteacher"){
+        $("ul").filter('.nav.navbar-nav').append('<li><a href="/students/#{classId}">View Assignments</li>');
+        $("ul").filter('.nav.navbar-nav').append('<li><a href="/viewstudentstat/#{classId}/name/AllRecords">View Students Stats</li>');
+        $("ul").filter('.nav.navbar-nav').append('<li><a href="/getattendance/#{classId}">Get attendance</li>');
+        $("ul").filter('.nav.navbar-nav').append('<li><a href="/codeshared">View Shared Codes</li>');
+        }
+    
+    });
+      
+  div.container
+      div(class="row")
+        div(class="col-sm-3 col-md-2 sidebar")
+          ul(class="nav nav-sidebar")
+              li
+                 h5 #{classinfom.cname} #{classinfom.ccode} #{classinfom.cSemester}
+              li 
+                 h5(class="text-success") Welcome #{user.name}
+              li 
+                 a(href="/logout") Not you logout
+               if (userinfo.role=="adminteacher")
+                 li
+                  a(href="/newproblemset/#{classId}")  Add Problem set
+                 li 
+                  a(href="/addTA/#{classId}") Add new TA
+                 li 
+                  a(href="/enrolstudents/#{classId}") Enroll/Unenroll students
+              li 
+                  h5(class="text-danger") Total problems tried in class time:
+               li
+                
+                  h5(class="text-success" style="margin-left: 5px;") #{classtimecount}/#{problemscount}
+              li 
+                   h5(class="text-danger") Total problems solved correctly in class time:
+              li
+                 
+                  h5(class="text-success" style="margin-left: 5px;") #{classtimecorrect}/#{problemcorrectcount}
+              li 
+                 h5(class="text-danger") Total problems tried:
+              li
+                 
+                  h5(class="text-success" style="margin-left: 5px;") #{problemscount}
+              li 
+                  h5(class="text-danger") Total problems solved correctly:
+              li
+                 
+                  h5(class="text-success" style="margin-left: 5px;") #{problemcorrectcount}
+              li 
+                  h5(class="text-danger") Total different debugged problems:
+               li
+                 
+                  h5(class="text-success" style="margin-left: 5px;") #{total_debugedproblems}
+
+              li 
+                  h5(class="text-danger") Total debug comments in all the problems:
+              li
+                 
+                  h5(class="text-success" style="margin-left: 5px;") #{total_debug}
+              li 
+                  h5(class="text-success" style="margin-left: 5px;") average comments per problem is #{total_debug/total_debugedproblems}
+
+             
+        div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
+          h3.
+              Problem Sets
+          div
+            Table(class="table table-bordered table-condensed")
+                each problemset , i in problemsetlist
+                      if (userinfo.role!="adminteacher" &&(problemset.showproblemset==true|| problemset.showproblemset==undefined) && (unactive.indexOf(problemset._id.toString())<0 || problemset.reqsubmission!=true))
+                       tr
+                          td
+                             a(href="/classes/problems/#{classId}/#{problemset._id}")= "" + problemset.pname
+
+                          td
+                             p=  problemset.pskill
+                          td
+                             p=problemset.useremail
+                          td
+                             p=problemset.pduetime
+                          if (problemset.reqsubmission!=undefined && problemset.reqsubmission==true)
+                            td
+                              button(onClick="unactive(\"#{user.email}\",\"#{problemset._id}\")", class="btn btn-primary btn-sm")= "Submit"
+                      else if (userinfo.role=="adminteacher")
+                        tr
+                            td
+                               a(href="/classes/problems/#{classId}/#{problemset._id}")= "" + problemset.pname
+
+                            td
+                               p=  problemset.pskill
+                            td
+                               p=problemset.useremail
+                            td
+                               p=problemset.pduetime
+                             if (problemset.reqsubmission!=undefined && problemset.reqsubmission==true)
+                              td
+                                button(onClick="unactive(\"#{user.email}\",\"#{problemset._id}\")", class="btn btn-primary btn-sm")= "Submit"
+                            td
+                                div(class="checkbox")
+                                    label show
+                                    if (problemset.showproblemset==undefined)
+                                      input(type="checkbox",id="showProblem",checked=true,name="#{problemset._id}",onclick='handleClickps(this)')
+                                    else
+                                      input(type="checkbox",id="showProblem",checked=problemset.showproblemset,name="#{problemset._id}",onclick='handleClickps(this)')
+                            td 
+                                  a(href="/updateproblemset/#{classId}/#{problemset._id}", class="btn btn-primary btn-sm")= "Update"
+
+
+                          

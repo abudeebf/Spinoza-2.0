@@ -1,0 +1,47 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    meta(name='description', content='')
+    meta(name='author', content='')
+    meta(name='copyright', content='Copyright (c) 2013 ALT-F1, We believe in the projects we work on™')
+    link(rel='shortcut icon', href='/bootstrap-3.0.0/assets/ico/favicon.png')
+    title Spinoza
+    link(href='/bootstrap-3.0.0/dist/css/bootstrap.css', rel='stylesheet')
+    link(href='/bootstrap-3.0.0/examples/starter-template/starter-template.css', rel='stylesheet')
+    script(src='/bootstrap-3.0.0/assets/js/html5shiv.js')
+    script(src='/bootstrap-3.0.0/assets/js/respond.min.js')
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    link(rel="stylesheet", href="/stylesheets/jquery.datetimepicker.css")
+    link(rel='stylesheet', href='/stylesheets/jquery.classyedit.css')
+    script(src='/javascripts/src-noconflict/ace.js')
+    script(src='/javascripts/jquery.xdomainrequest.min.js')
+    script(src='/javascripts/jQuery.XDomainRequest.js')
+    script(src='/bootstrap-3.0.0/assets/js/jquery.js').
+    script(src='/bootstrap-3.0.0/dist/js/bootstrap.min.js')
+    body(onload="brython({debug:1, cache:'none', static_stdlib_import:true})")
+        .navbar.navbar-inverse.navbar-fixed-top
+            .container
+                .navbar-header
+                    button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-collapse')
+                        span.icon-bar
+                        span.icon-bar
+                        span.icon-bar
+                    a.navbar-brand(href='/profile') Spinoza
+                .collapse.navbar-collapse
+                    ul.nav.navbar-nav
+                        li
+                            a(href='/') Login
+                        li 
+                            a(href="/pythonide") Python IDE
+                        //- li  
+                        //-     a(herf='/updateSections') Update Sections
+        .container
+    
+
+block content
+hr
+.footer( class ="text-center")
+       
+        p  &copy; abudeebf@brandeis.edu tjhickey@brandeis.edu   

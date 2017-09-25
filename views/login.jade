@@ -1,0 +1,14 @@
+extends layout
+block content
+   
+	div.container
+		div(class="jumbotron text-center")
+			if(message != undefined)
+				h5(class="text-danger") #{message}
+			p="Please login with brandeis email"
+			a(href="/auth/google" ,class="btn btn-danger")
+				span(class="fa fa-google-plus") Google
+		
+
+
+

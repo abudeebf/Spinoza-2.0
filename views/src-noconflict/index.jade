@@ -1,0 +1,112 @@
+extends layout
+block content
+    script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+    script(src="/javascripts/main.js")
+    script(type='text/javascript').
+        $(document).ready(function(){
+         setInterval(function() { 
+            test3("#{id1}");
+            }, 1000);
+
+        });
+        $(window).on('beforeunload', function() {
+          alert("your changes will be saved ");
+          test3("#{id1}");
+        });
+        window.onunload = function() { 
+          alert("your changes will be saved ");
+          test3("#{id1}");
+        }
+        
+    div.container
+        div.top(class=" text-center")
+            p= "Welcome " + user.name
+            a(href="/logout" ,class="btn btn-default btn-sm") Not you logout
+            a(href="/homeworks" ,class="btn btn-default btn-sm") Back
+       
+        table
+            tr
+                td
+                     h4 Homework Description
+                td
+                    label Theme
+                    select(id="selectNumber",style="margin-left:5px")
+                        option choose a theme
+                          
+                td 
+                    h4 Program Stander output
+            tr
+                td 
+                    div(name="des" ,id="u1",readonly="readonly",style="border:thick solid #000000") 
+                      textarea(name="des1" ,id="u2",readonly="readonly") #{title}
+                td
+                    div(name="code", rows=20,cols=100 ,id="editor",style="border:thick solid #000000") #{code}
+                    input(name="code2",type="hidden",id="code2")
+
+                td
+                    textarea.span4(name="result", rows=20,cols=50 ,id="u",readonly="readonly",style="border:thick solid #000000") #{result}
+        table
+            tr
+                td
+                    button(onClick='reset(\"#{id1}\")',style='width: 80px; height: 50px; margin-right:10px;',class="btn btn-primary btn-sm") Reset
+                    button(onClick='test(\"#{id1}\",\"#{user.email}\",\"#{classname}\")',style='width: 80px; height: 50px;',class="btn btn-primary btn-sm") Run     
+                    button(onClick='test2(\"#{id1}\")',style='width: 120px; height: 50px;margin-left:10px;margin-right:10px',class="btn btn-primary btn-sm") submit to grade
+                    input(id="theme",value="#{theme}", type="hidden")
+                    input(id="classname",name="classname",value="#{classname}", type="hidden")
+                td  
+
+                  
+                     p  Feedback before submitting to grade : 
+                        div(name="feedback",id="feedback")
+                             label
+                             input(type="radio", name="goodness", id="goodness", value=0,checked=false)
+                             |Easy
+                             label
+                             input(type="radio", name="goodness", id="goodness", value=1,checked=false)
+                             |Neutral
+                             label 
+                             input(type="radio", name="goodness", id="goodness", value=2,checked=false)
+                             |Diffcult
+
+                
+                    
+      
+                           
+
+         div.span4
+            div(name="testr",id="testr")
+         
+                
+
+       script.
+            var select = document.getElementById("selectNumber");
+            var options = ["textmate", "eclipse", "monokai", "twilight", "clouds"];
+            for(var i = 0; i < options.length; i++) {
+              var opt = options[i];
+              var el = document.createElement("option");
+              el.textContent = opt;
+              el.value = opt;
+              select.appendChild(el);
+            }
+            var editor = ace.edit("editor")
+            editor.getSession().setTabSize(2)
+             var theme = document.getElementById("theme");
+             if (theme.value !=null || theme.value !=undefined)
+              editor.setTheme("ace/theme/"+theme.value)
+            else
+            editor.setTheme("ace/theme/textmate")
+            editor.getSession().setMode("ace/mode/java")
+            document.querySelector('input[name=code2]').value=editor.getValue()
+            editor.setFontSize(12);
+            select.addEventListener('change', function() {
+                editor.setTheme("ace/theme/"+this.value)
+                  saveTheme(this.value);
+             });
+              $('#u').scrollTop($('#u')[0].scrollHeight)
+            editor.on('paste', function(text){
+               
+            })
+            editor.getSession().on('change', function(e) {
+                  document.querySelector('input[name=code2]').value=editor.getValue()
+                
+                })

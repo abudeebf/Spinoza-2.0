@@ -1,0 +1,129 @@
+extends layout
+block content
+    script(src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js")
+    script(src="/javascripts/bootstrap.js")
+    script(src="/javascripts/bootstrap.min.js")
+    script(src="/javascripts/main.js")
+    script(src="/socket.io/socket.io.js")
+    script(src="/javascripts/user-script.js")
+    script(src="/javascripts/stat-script.js")
+    script(type='text/javascript').
+       $(document).ready(function(){
+        $("ul").filter('.nav.navbar-nav').append('<li><a href="/codeshared">View Shared Codes</li>');
+        if ("#{grader.role}"=="adminteacher")  
+          $("ul").filter('.nav.navbar-nav').append('<li><a href="/students">View Assignments</li>');
+          $("ul").filter('.nav.navbar-nav').append('<li><a href="/viewstudentstat/runPerProblems/AllRecords">View Students Stats</li>');
+        
+        //- if("#{back}"=="shared")
+       });
+    div.container
+       div(class="row")
+        div(class="col-sm-3 col-md-2 sidebar")
+          ul(class="nav nav-sidebar")
+              li 
+                 h5(class="text-success") Welcome #{grader.name}
+              li
+                 h5 You are viewing the solution for student #{studentname}, Submission time : #{date} 
+               if (grader.role=="adminteacher")  
+                li
+                   h5(class="text-danger")  Currently connected
+                li 
+                   h5(class="text-success",id="connections",style="margin-left:20px" )
+                li
+                  a(href="/newproblem")  Add new Homework
+                li
+                  a(href="/newexcersise") Add new Class Exercise
+                li 
+                  a(href="/addTA") Add new TA
+              li 
+                 a(href="/logout") Not you logout
+        div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
+          table
+              tr
+                  td
+                      h4(style="margin-right:5px") Homework Description
+                       button(onClick='test(\"#{id1}\",\"#{student}\",\"#{classname}\")',style="margin-left:5px",class="btn btn-primary btn-sm") Compile and Run     
+                  td
+                      label Theme
+                      select(id="selectTheme",style="margin-left:5px")
+                          option choose a theme
+              tr
+                  td 
+                       div(name="des1" ,id="u",readonly="readonly",style="border:thick solid #000000") 
+                       input(id="description",value="#{title}", type="hidden")
+                  td
+                      div(name="code", rows=20,cols=100 ,id="editor",style="border:thick solid #000000") #{code}
+                      input(name="code2",type="hidden",id="code2",value="#{code}")
+                      input(id="classname",name="classname",value="#{classname}", type="hidden")
+                      input(id="theme",value="#{theme}", type="hidden")
+          div.span4
+                div(class="tabbable")
+                        ul(class="nav nav-tabs" id="tabs")
+                          li(class="active")
+                            a(href="#testr",data-toggle="tab") Test Result
+                          li
+                            a(href="#result",data-toggle="tab") Stdout
+                          if (back!="shared")
+                            li
+                              a(href="#comments",data-toggle="tab") Grade and Comments
+                        div(class="tab-content")
+                          div(class="tab-pane active",name="testr",id="testr")
+                          textarea(class="tab-pane ",id="result",name="result",readonly="readonly",style="margin-left:2px;font-family:monospace;") #{result}
+                          if (back!="shared")
+                              div(class="tab-pane",name="comments",id="comments")
+                                    input(name="grade",type="Number" , placeholder="Grade?", id="grade",min=0,class="form-control")
+                                    textarea(name="comment",rows=5,cols=100 ,id="comment",placeholder="Comments?",class="form-control")
+                                    button(onClick='grade(\"#{id1}\",\"#{student}\",\"#{grader.name}\")',class="btn btn-primary form-control ") Submit grade
+
+                          
+                          
+                          
+
+           
+                
+
+       script.
+            var select = document.getElementById("selectTheme");
+            var options = ["textmate", "eclipse", "monokai", "twilight", "clouds"];
+            for(var i = 0; i < options.length; i++) {
+              var opt = options[i];
+              var el = document.createElement("option");
+              el.textContent = opt;
+              el.value = opt;
+              select.appendChild(el);
+            }
+            var editor = ace.edit("editor")
+            editor.getSession().setTabSize(2)
+            var theme = document.getElementById("theme");
+             if (theme.value !=null && theme.value !=undefined && theme.value!="Choose a theme"&& theme.value !="undefined")
+              {
+                editor.setTheme("ace/theme/"+theme.value);
+                select.value=theme.value;
+
+              }
+            else
+             {
+                editor.setTheme("ace/theme/textmate");
+                select.value="textmate";
+                saveTheme("textmate");
+             }
+            var desc=document.getElementById("description").value.replace(/"/g, "'");
+            document.querySelector('div[name=des1]').innerHTML= ""+desc;
+            saveMode("java");
+            editor.getSession().setMode("ace/mode/java")
+            document.querySelector('input[name=code2]').value=editor.getValue()
+            editor.setFontSize(14);
+            select.addEventListener('change', function() {
+                editor.setTheme("ace/theme/"+this.value)
+                saveTheme(this.value);
+             });
+             
+            editor.getSession().on('change', function(e) {
+
+              document.querySelector('input[name=code2]').value=editor.getValue()
+          
+            })
+
+            
+
+     
