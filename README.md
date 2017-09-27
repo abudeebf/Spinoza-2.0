@@ -1,6 +1,6 @@
 
 
-# ${Spinoza 2.0}
+# Spinoza 2.0
 Spinoza 2.0 is python online IDE that allow the instructor to post programming question to students and support some intrestring classroom Orchestration features.
 
 
