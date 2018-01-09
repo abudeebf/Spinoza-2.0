@@ -365,29 +365,37 @@ function clearall(){
 	if($("#mytable").length > 0)
 	  $("#mytable").remove();
 	$("#studentcomments").val("")
+	$("#eNo").val(1)
 	$("#console").val("")
 }
  function firstDebugProblem(){
     
  	checkId(hashtest_ids[hash][hashround]); // check the first pid
+ 	
  	if(repeat) // if the user give comments and reach to the end of errors we should enable him to go from the begining and see his comments and other student comment
- 	{   if(user_comment[hashtest_ids[hash][hashround]]!=undefined){// if the user give comment to this error show his comment
+ 	{   if(user_comment[hashtest_ids[hash][hashround]]!=undefined  ){// if the user give comment to this error show his comment
 	 		update(repeat)
-		 	var bugtype1=user_comment[hashtest_ids[hash][hashround]].split("/////$$$$$")[0].trim()
-		 	var comment=user_comment[hashtest_ids[hash][hashround]].split("/////$$$$$")[1]
+	 		var u_comment=user_comment[hashtest_ids[hash][hashround]].split("/////$$$$$");
+		 	var bugtype1=u_comment[0].trim()
+		 	var comment=u_comment[1]
+		 	var bugN=1;
+		 	if (u_comment.length>2)
+                bugN=u_comment[2]
 		 	$("input[name=bugtype][value="+bugtype1+"]").prop('checked', true);
 		 	$("#studentcomments").val(comment);
+		 	document.getElementById("eNo").value=bugN;
 		 	pouplateOthercomments(errorId_idonotknow[hashtest_ids[hash][hashround]],errorId_incomplete[[hashtest_ids[hash][hashround]]],errorId_syntax[[hashtest_ids[hash][hashround]]],errorId_logic[[hashtest_ids[hash][hashround]]]);}
 		 else{// if he did not allow the student to enter his comment
 			 	update(false)
 	            clearall()
+	            
 			 }
     }else
     {
     	update(false)
      	clearall()
     }
-    
+     
  	var code2= ids_solutions[hashtest_ids[hash][hashround]]
  	var editor = ace.edit("editor");
     editor.setValue(code2, 0);
@@ -397,14 +405,16 @@ function clearall(){
 
  function updatefilter(){
  	if(sort>0) // if I did not reach the end
-   	{
-   		sort=sort-1;
+   	{   sort=sort-1;
    		hash=sorter[sort];
-   		hashround=0;
-   	}
-   	else
-   	{
-   		if(sort==0 && hashround==hashtest_ids[hash].length-1)
+
+   		while(hashtest_ids[hash].length-1<hashround ){
+   			if (sort!=0){
+   			sort=sort-1;
+   		    hash=sorter[sort];
+   		}
+   		else{
+   			if(sort==0 && hashround==(hashtest_ids[sorter[sorter.length-1]].length-1))
    		{
    			repeat=true;
    			sort=sorter.length-1;
@@ -421,11 +431,33 @@ function clearall(){
 	   		else
 	   		{
 	   			hashround=0;
-	   			if(sort!=0)
-	   			 	sort=sort-1;
-	   			else
-	   				sort=sorter.length-1
-	   			hash=sorter[sort];
+	   		}
+   	    }
+   		}
+   	}
+
+       
+        
+   	}
+   	else
+   	{
+   		if(sort==0 && hashround==(hashtest_ids[sorter[sorter.length-1]].length-1))
+   		{
+   			repeat=true;
+   			sort=sorter.length-1;
+   			hash=sorter[sort];
+   			hashround=0;
+   			
+   		}
+   		else
+   		{
+	   		sort=sorter.length-1;
+	   		hash=sorter[sort];
+	   		if(hashround<hashtest_ids[hash].length-1)
+	   			hashround+=1;
+	   		else
+	   		{
+	   			hashround=0;
 	   		}
    	    }
    	 }
@@ -440,43 +472,43 @@ function clearall(){
    
    while(user_pid.indexOf(pid)>-1) // if I did not comment on this id
    {
+   	
    	if(sort>0)
    	{
    		sort=sort-1; //order descending
    		hash=sorter[sort];
-   		hashround=0;
    	}
    	else
    	{
-   		if(sort==0 && hashround==hashtest_ids[hash].length-1)
-   		{
+
+   		if(sort==0 && hashround==(hashtest_ids[sorter[sorter.length-1]].length-1))
+   		{   
    			repeat=true; 
    			sort=sorter.length-1;
    			hash=sorter[sort];
    			hashround=0;
    			break;
    		}
+
    		else
    		{
 	   		sort=sorter.length-1;
 	   		hash=sorter[sort];
-	   		if(hashround<hashtest_ids[hash].length-1)
+	   		if(hashround<(hashtest_ids[hash].length-1))
 	   			hashround+=1;
 	   		else
 	   		{
 	   			hashround=0;
-	   			if(sort!=0)
-	   			 	sort=sort-1;
-	   			else
-	   				sort=sorter.length-1
-	   			hash=sorter[sort];
 	   		}
    	    }
    	 }
-    
-   	 pid=hashtest_ids[hash][hashround]
+
+     if((hashtest_ids[hash].length-1)>=hashround)
+   	 	pid=hashtest_ids[hash][hashround]
    
  }
+  
+  
 }
 }
 function getTotal (pid){
@@ -492,11 +524,11 @@ function getTotal (pid){
 	return total;
 }
 function next(){
-	if ($("#studentcomments").prop("disabled")){
+	if ($("#studentcomments").prop("disabled") &&$("#submitCcomment").prop("disabled") ){
 		 firstDebugProblem()
 	}
   else{
-  	alert("please debug this problem to go to the next")
+  	alert("please debug this problem to go to the next and make sure you select the best comment")
   }
 
 }
@@ -518,31 +550,40 @@ function next(){
 	      {
 	      	row = $('<tr></tr>');
 	      	if(max<=dontknowarray.length-1)
-	      		row.append($('<td></td>').text(dontknowarray[max]));
+	      		row.append($('<td><input type="radio" name="commentC" value='+dontknowarray[max].split("$$$$^^^**")[1]+'>'+dontknowarray[max].split("$$$$^^^**")[0]+' </td>'));
 	      	else
 	      		row.append($('<td></td>').text(""));
 	      	if(max<=incompletearray.length-1)
-	      		row.append($('<td></td>').text(incompletearray[max]));
+	      		row.append($('<td><input type="radio" name="commentC" value='+incompletearray[max].split("$$$$^^^**")[1]+'>'+incompletearray[max].split("$$$$^^^**")[0]+'</td>'));
 	      	else
 	      		row.append($('<td></td>').text(""));
 	      	if(max<=syntaxarray.length-1)
-	      		row.append($('<td></td>').text(syntaxarray[max]));
+	      		row.append($('<td><input type="radio" name="commentC" value='+syntaxarray[max].split("$$$$^^^**")[1]+'>'+syntaxarray[max].split("$$$$^^^**")[0]+'</td>'));
 	      	else
 	      		row.append($('<td></td>').text(""));
 	      	if(max<=logicarray.length-1)
-	      		row.append($('<td></td>').text(logicarray[max]));
+	      		row.append($('<td><input type="radio" name="commentC" value='+logicarray[max].split("$$$$^^^**")[1]+'>'+logicarray[max].split("$$$$^^^**")[0]+' </td>'));
 	      	else
 	      		row.append($('<td></td>').text(""));
 	      	max=max-1;
 	      	 table.append(row);
 	      }
-	     
+	      row = $('<tr></tr>');
+	      row.append('<button id="submitCcomment"class="btn btn-primary " onClick="submitCComment()">I think this comment is the best</button>')
+	      table.append(row);
 	      $("#othercomment").append(table)
 	  }
+ }
+ function submitCComment(){
+ 	if($("input:radio[name='commentC']").is(":checked")==true)
+ 		$("#submitCcomment").prop("disabled",true);
+ 	else
+ 		alert("please choose the best comment")
  }
  function update(value)
  {
  	$("#studentcomments").prop("disabled", value);
+ 	$("#eNo").prop("disabled", value);
  	jQuery("input[name=bugtype]").prop("disabled", value);
  	$("#submitcomment").prop("disabled",value);
  }
@@ -554,27 +595,28 @@ function next(){
       var problemsetId=$("#problemsetId").val();
       var comment=$("#studentcomments").val();
       var bugtype=$("input:radio[name='bugtype']:checked").val();
+      var bugNo=$("#eNo").val();
       var error_id=hashtest_ids[hash][hashround];
-      parameters={pid:pid,classId:classId,problemsetId:problemsetId,comment:comment,bugtype:bugtype,error_id:error_id,hashtest:hash}
-   	 $.post(host+'addcomment',parameters ,function(data){
-   	  user_comment[hashtest_ids[hash][hashround]]=bugtype+"/////$$$$$"+comment;
-   	  user_pid.push(hashtest_ids[hash][hashround]);
-   	  hashtest_ids=data.hashtest_ids;
-      sorter=data.sorter;
-      sort=sorter.length-1;
-      hashround=0;
-      hash=sorter[sort];
-      ids_solutions=data.ids_solutions;
-      update(true)
+      parameters={pid:pid,classId:classId,problemsetId:problemsetId,comment:comment,bugtype:bugtype,bugNo:bugNo,error_id:error_id,hashtest:hash}
+   	  $.post(host+'addcomment',parameters ,function(data){
+	   	  user_comment[hashtest_ids[hash][hashround]]=bugtype+"/////$$$$$"+comment+"/////$$$$$"+bugNo;
+	   	  user_pid.push(hashtest_ids[hash][hashround]);
+	   	  hashtest_ids=data.hashtest_ids;
+	      sorter=data.sorter;
+	      sort=sorter.length-1;
+	      hashround=0;
+	      hash=sorter[sort];
+	      ids_solutions=data.ids_solutions;
+	      update(true)
 
-      var editor = ace.edit("editor");
-      editor.setReadOnly(false)
-      errorId_idonotknow=data.idontknowdic
-	  errorId_incomplete=data.incompletedic;
-	  errorId_syntax=data.syntaxdic
-	  errorId_logic=data.logicdic
-      
-      pouplateOthercomments(data.previousId_idonotknow,data.previousId_incomplete,data.previousId_syntax,data.previousId_logic);
+	      var editor = ace.edit("editor");
+	      editor.setReadOnly(false)
+	      errorId_idonotknow=data.idontknowdic
+		  errorId_incomplete=data.incompletedic;
+		  errorId_syntax=data.syntaxdic
+		  errorId_logic=data.logicdic
+	      
+	      pouplateOthercomments(data.previousId_idonotknow,data.previousId_incomplete,data.previousId_syntax,data.previousId_logic);
    });
    }
    else
@@ -615,6 +657,8 @@ function next(){
 	  <input type="radio" name="bugtype" value="incomplete"> program is not complete (only definition)<br>
   </form>
    <textarea rows="4" cols="50" id="studentcomments" required > </textarea><br>
+   <label style="margin-left:5px">Number of errors you see in the code</label>
+   <input name="eNo" type="number" min="1" value="" id="eNo" style="margin-left:5px"/><br>
    <button id="submitcomment"class="btn btn-primary " onClick="submitComment()">Submit comment</button>
    <button id="nextDebug"class="btn btn-primary " onClick="next()">next</button>
    <h5 class="text-danger" id="debugnumber"> </h5> 

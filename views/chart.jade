@@ -51,8 +51,8 @@ block content
 
 			});
 
-		p="Engagment graph for " 
-		label choose the date
-		input(name="startTime",style='margin-left:5px',type="text" value="#{date}" id="datetimepicker_mask")
-		button(onClick="engagment(\"#{pid}\")", class="btn btn-primary btn-sm", style="margin-left:5px") Refersh graph
+		p="Engagment graph for  " 
+		p= date
+		
+		button(onClick="engagment(\"#{pid}\",\"#{classId}\")", class="btn btn-primary btn-sm", style="margin-left:5px") Refersh graph
 	

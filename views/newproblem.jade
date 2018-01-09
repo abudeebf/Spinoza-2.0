@@ -104,7 +104,7 @@ block content
                                         input(type="checkbox",id="showcases",value=true,name="showcases",checked=true)
                               tr
                                    td
-                                      label Solution
+                                      label Solution ( please make sure to name your method solution )
                                    td
                                       if ( assignment != undefined)
                                         div(name="sol1", rows=2,cols=100 ,id="editor3") #{assignment.sol}
@@ -114,7 +114,7 @@ block content
                                        input(name="sol",type="hidden",value="def solution(a):")
                               tr 
                                   td
-                                      label Parameters Numbers
+                                      label Parameters Numbers (0 if the method take no parameter)
                                   td
                                         if ( assignment != undefined)
                                           input(name="pNumbers",type="text" ,class="form-control", placeholder="Please enter the number of parameters your method takes",value="#{assignment.pNumbers} ")
@@ -139,6 +139,18 @@ block content
                                         else
                                           div(name="test_genrator1" ,id="editor2") #{defualtTest}
                                           input(name="test_genrator",type="hidden",value="#{defualtTest}")
+                              tr
+                                 td
+                                        label Allow Hint
+                                    td
+                                        if ( assignment!=undefined && assignment.allowHint!=undefined)
+                                          input(type="hidden", name="allowHint2", value="#{assignment.allowHint}")
+                                        if ( assignment==undefined || assignment.allowHint==undefined || assignment.allowHint==false)
+                                         input(type="checkbox",id="allowHint",value=false,name="allowHint",checked=false)
+                                          
+                                        else
+                                         input(type="checkbox",id="allowHint",value=true,name="allowHint",checked=true)
+                                         
                               tr
                                   td
 

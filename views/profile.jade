@@ -71,5 +71,12 @@ html
                                         a(href="/classes/problems/#{section._id}")=  section.cname
                                     td 
                                         p= section.classPin
+                                    if (admins.indexOf(section.classPin)>-1)
+                                        td
+                                            a(href="/updateclass/#{section._id}",  class="btn btn-primary btn-sm")= "Edit the class"
+                                    else
+                                        td
+
+
                          else
                             p=" You did not join any class yet "

@@ -34,7 +34,7 @@ block content
                  li
                   a(href="/library/#{classId}/#{problemsetId}") Add problem to the set from Spinoza Library
                  li 
-                  a(href="/addTA") Add new TA
+                  a(href="/addTA/#{classId}") Add new TA
                li 
                  a(href="/logout") Not you logout
         div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
@@ -82,7 +82,7 @@ block content
                                  p=problem.creator
 
                               td
-                                 a(href='/getdata/#{problem._id}/empty',class="btn btn-primary btn-sm") Engagment graph
+                                 a(href='/getdata/#{problem._id}/#{classId}',class="btn btn-primary btn-sm") Engagment graph
 
                               td
                                   a(href='/debug/#{problem._id}',class="btn btn-primary btn-sm") Debug other code
@@ -96,7 +96,7 @@ block content
                                   a(href="/problems/update/#{classId}/#{problemsetId}/#{problem._id}", class="btn btn-primary btn-sm")= "Update"
                               td
 
-                                  a(href="/#{classId}[]#{problem._id}[]0[]1[]All[]false[]All[]0[]0[]0", class="btn btn-primary btn-sm")= "View Graph"
+                                  a(href="/#{classId}[]#{problem._id}[]0[]1[]All[]false[]All[]0[]0[]0[]false[]false", class="btn btn-primary btn-sm")= "View Graph"
                               td 
                                   a(href="/summary/submission/#{classId}/#{problem._id}/false",class="btn btn-primary btn-sm")="Show grouped solutions"
                               td 

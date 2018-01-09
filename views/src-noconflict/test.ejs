@@ -53,9 +53,8 @@
 <script type="text/javascript">
 
 hints={gethint:function(src,result,percentage,output,stderr,c){
-
 	$.post($('#host').val()+"addsoultiontoproblem",{'pid':$('#pid').val(), 'sol':src,'result':result,'percentage':percentage,"stdout":output,"compliererror":c,'stderr':""},function(data){
-		if((data.logic.length +data.syntax.length)>0 && $("#reqsubmission").val()!="true" && $("#allowHint").val().trim()=="true" ){
+		if((data.logic.length +data.syntax.length)>0 && ($("#reqsubmission").val()!="true" && ("#allowHint").val().trim()=="true")){
          $("#hints").css('display', 'block');
          pouplateOthercomments(data.logic,data.syntax)}
         else

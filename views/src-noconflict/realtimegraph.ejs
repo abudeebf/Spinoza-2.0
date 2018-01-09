@@ -20,7 +20,7 @@
 <script src="ace/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
 <script src="ace/mode-python3.js" type="text/javascript" charset="utf-8"></script>
 <script src="ace/snippets/python.js" type="text/javascript" charset="utf-8"></script>
-<script type="text/javascript" src="/js/vis.js"></script>
+<script type="text/javascript" src="/javascripts/vis.js"></script>
 <link rel="stylesheet" href="/stylesheets/vis.css"/>
 <link rel="stylesheet" href="/stylesheets/vis-network.min.css"/>
 <script src="/javascripts/main.js"></script>
@@ -331,15 +331,28 @@ timer.set_interval(getText,1);
 
 </script>
 <script type="text/javascript">
-        
+    
          $(function() {
+
+
+		// Start file download.
+		
+        
          	var sst=<%-JSON.stringify(sst)%>;
         var s1=1, s2=3600;
         if (sst!="0"){
-        document.getElementById("sst").checked = true;
+        
          s1=Number(sst.split("-")[0])
          s2=Number(sst.split("-")[1])
+         var s3=sst.split("-")[2];
+         if(s3==0)
+         	document.getElementById("v0").checked = true;
+         else
+         	document.getElementById("v1").checked = true;
+
      }
+     else
+     document.getElementById("v2").checked = true;
             $( "#slider-3" ).slider({
                range:true,
                min: 1,
@@ -358,7 +371,19 @@ timer.set_interval(getText,1);
 	var nodeNames=<%- JSON.stringify(nodesName) %>;
 	var hash_names=<%- JSON.stringify(hash_names) %>;
 	var users=<%- JSON.stringify(users)%>;
-		
+	function download(filename, text) {
+		var element = document.createElement('a');
+		element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+		element.setAttribute('download', filename);
+
+		element.style.display = 'none';
+		document.body.appendChild(element);
+
+		element.click();
+
+		document.body.removeChild(element);
+     }
+	
 	function showanotherversion(){
 		var id=document.getElementById("pid").value;
 		var nodeName=document.getElementById("hashtest").value;
@@ -399,21 +424,23 @@ timer.set_interval(getText,1);
     }
 	$(window).load(function () 
 	{   
-		var slider = document.getElementById("myRange");
-		var output = document.getElementById("demo");
-		output.innerHTML = slider.value; // Display the default slider value
+		//var slider = document.getElementById("myRange");
+		//var output = document.getElementById("demo");
+		//output.innerHTML = slider.value; // Display the default slider value
 
 	// Update the current slider value (each time you drag the slider handle)
-		slider.oninput = function() {
-			output.innerHTML = this.value;
-		}
+		//slider.oninput = function() {
+			//output.innerHTML = this.value;
+		//}
+
 		var nodes = new vis.DataSet();
 		var edges = new vis.DataSet();
 		var nodeNames=<%- JSON.stringify(nodesName) %>;
 		var errors=<%-JSON.stringify(errors)%>;
+		var scolor=<%-JSON.stringify(scolor)%>;
 		var show=<%-JSON.stringify(show)%>;
 		var spt=<%-JSON.stringify(spt)%>;
-		
+		var text="digraph finite_state_machine {\nrankdir=LR;\n size=\"10,7\"\nnode [shape=circle];\n"
 		var cstudent=<%-JSON.stringify(cstudent)%>;
 		var hash_code=<%-JSON.stringify(hash_code)%>;
 		var hash_names=<%-JSON.stringify(hash_names)%>;
@@ -426,19 +453,19 @@ timer.set_interval(getText,1);
 		var nodeRadious;
 		var n_r={};
 		var l=0;
+		var totalNode={};
 		if (errors=="All")
 		document.getElementById("syntax").checked = true;
         if (show=="true")
         document.getElementById("showname").checked = true;
+        if(scolor=="true")
+        	document.getElementById("sizeColor").checked = true;
        if (spt!="0"){
-        document.getElementById("spt").checked = true;
-        slider.value= Number(spt)
-        output.innerHTML=Number(spt)
+        //document.getElementById("spt").checked = true;
+        //slider.value= Number(spt)
+        //output.innerHTML=Number(spt)
         }
-        if (sst!="0"){
-        document.getElementById("sst").checked = true;
-         
-        }
+        
 		var result=<%-JSON.stringify(result)%>;
 		for ( var key in <%-JSON.stringify(alises)%>){
 			var colr=convertRGB(1-(percent[key]/100),(percent[key]/100),0);
@@ -449,6 +476,11 @@ timer.set_interval(getText,1);
 			l=l+1;
 
 			n_r[key]=nodeRadious;
+			if(nodeNames[key]!=undefined){
+			if (document.getElementById('sizeColor').checked==false)
+            text+="\""+key.replace(/\s/g,'')+"\""+"[label="+"\""+nodeNames[key].split("_")[0]+"\""+",color=\""+colr+"\",style=\"filled\",fontcolor=black,width="+nodeRadious+", fontsize=90]\n"
+            else
+            	text+="\""+key.replace(/\s/g,'')+"\""+"[label="+"\""+nodeNames[key].split("_")[0]+"\""+",color=\"blue\",style=\"filled\",fontcolor=black,width=5, fontsize=90]\n"
 			nodes.add( {id: key ,level:l, label:nodeNames[key],value:nodeRadious,title:nodeNames[key],fontStrokeWidth : 4,fontStrokeColor : 'white',shape: 'dot',borderWidth:1,color: {
 			border: 'black',
 			
@@ -458,14 +490,23 @@ timer.set_interval(getText,1);
 			background: 'gold'
 			}}});
 		}
+		}
 		l=l+1;
 		n_r["0"]=Math.sqrt(<%-JSON.stringify(start_no)%>);
-		nodes.add({id:"0",label:"Start_"+ <%-JSON.stringify(start_no)%>,title:"Start_"+<%-JSON.stringify(start_no)%>,value:Math.sqrt(<%-JSON.stringify(start_no)%>),fontStrokeWidth : 4,fontStrokeColor : 'white',shape: 'dot',color: {
+		if (document.getElementById('sizeColor').checked==false)
+		text+="\"0\"[label="+"\"S\",color=\"red\",style=\"filled\",fontcolor=black,width="+Math.sqrt(parseInt(<%-JSON.stringify(start_no)%>))+", fontsize=90]\n"
+	    else
+	    	text+="\"0\"[label="+"\"S\",color=\"blue\",style=\"filled\",fontcolor=black,width=5, fontsize=90]\n"
+		nodes.add({id:"0",label:"Start_"+ <%-JSON.stringify(start_no)%>,title:"Start_"+<%-JSON.stringify(start_no)%>,value:Math.sqrt(parseInt(<%-JSON.stringify(start_no)%>)),fontStrokeWidth : 4,fontStrokeColor : 'white',shape: 'dot',color: {
 		border: 'black',
 		background:"red",level:l}});
 		l=l+1;
 		n_r["1"]=Math.sqrt(<%-JSON.stringify(gaveup_no)%>);
-		nodes.add({id:"1",level:l,label:"Gaveup_"+<%-JSON.stringify(gaveup_no)%>,title:"Gaveup_"+<%-JSON.stringify(gaveup_no)%>,value:Math.sqrt(<%-JSON.stringify(gaveup_no)%>),fontStrokeWidth : 4,fontStrokeColor : 'white',shape: 'dot',color: {
+		if (document.getElementById('sizeColor').checked==false)
+		text+="\"1\"[label=\"G\",color=\"gray\",style=\"filled\",fontcolor=black,width="+Math.sqrt(parseInt(<%-JSON.stringify(gaveup_no)%>))+", fontsize=90]\n"
+	    else
+	    	text+="\"1\"[label=\"G\",color=\"blue\",style=\"filled\",fontcolor=black,width=5, fontsize=90]\n"
+		nodes.add({id:"1",level:l,label:"Gaveup_"+<%-JSON.stringify(gaveup_no)%>,title:"Gaveup_"+<%-JSON.stringify(gaveup_no)%>,value:Math.sqrt(parseInt(<%-JSON.stringify(gaveup_no)%>)),fontStrokeWidth : 4,fontStrokeColor : 'white',shape: 'dot',color: {
 		border: 'black',
 		background:"gray"}});
 		var edgeno;
@@ -475,58 +516,52 @@ timer.set_interval(getText,1);
 		var find=[];
 		var edgesin=[];
 		var addege=true;
+		var edge= parseInt(<%-JSON.stringify(edge)%>);
+		
 		for ( var key in result )
 		{
 			var from1=key.split("->")[0].trim();
 			var to1=key.split("->")[1].trim();
-			if (from1=="0" || to1=="1")
-			{
+			 
 				edgeno=result[key];
 				addedge=true;
-			}
+				
+			
 
-			else
-				{
-					if (result[to1+"->"+from1]==undefined || to1==from1)
-					{
-						addedge=true;
-						edgeno=result[key];
-					}
-					else if ( edgesin.indexOf(key)<=-1)
-					{
-						edgesin.push(key);
-						edgesin.push(to1+"->"+from1);
-						if (result[to1+"->"+from1]> result[key]){
-							edgeno=result[to1+"->"+from1] + " - " +result[key];
-							from1=key.split("->")[1].trim();
-							to1=key.split("->")[0].trim();
-							addedge=true;
-						}
-						else 
-						{
-							edgeno=result[key] + " - " +result[to1+"->"+from1];
-							addedge=true;
-						}
-
-					}
-					else
-					{
-						addedge=false;
-					}
-				}
+			
 			if(addedge)
 			{
+				
+				
+                
+				
 				c=c+1;
-				if (result[from1+"->"+to1]<10)
-					w=1;
-				else
-					w=2;
-				edges.add({id: c+"", from: from1, to: to1, width:w,
-				style: 'arrow',title:edgeno,
-				color: 'blue',label:edgeno,labelAlignment:'line-center',fontStrokeWidth : 2,fontStrokeColor : '#00ff00',smoothCurves:{type:type, roundness:1}});
-			}
+				var percentage;
+				
+				var from2=key.split("->")[0];
 
+				if(from2 in self_node && from1!=to1)
+                percentage = Math.round((edgeno/(counthash[from2]-result[self_node[from2]]))*100)
+                else
+                percentage =Math.round((edgeno/counthash[from2])*100)
+                if(from1=="0"){
+                	percentage=Math.round((edgeno/<%-JSON.stringify(start_no)%>)*100)
+                }
+                w=(edgeno/<%-JSON.stringify(start_no)%>)*10;
+
+                if(percentage>=edge || from1=="0" || to1=="1"){
+				edges.add({id: c+"", from: from1, to: to1, width:w,
+				style: 'arrow',title:String(edgeno)+"("+String(percentage)+"%)",
+				color: 'blue',label:String(edgeno)+"("+String(percentage)+"%)",labelAlignment:'line-center',fontStrokeWidth : 2,fontStrokeColor : '#00ff00',smoothCurves:{type:type, roundness:1}});
+				if (document.getElementById('sizeColor').checked==false)
+				text+="\""+from1.replace(/\s/g,'')+"\""+" -> "+"\""+to1.replace(/\s/g,'')+"\""+"[label="+"\""+String(edgeno)+"("+String(percentage)+"%)\",penwidth=\""+w+"\", color=\"gray\" ,fontsize=50,arrowsize=2]\n"
+			    else
+			    	text+="\""+from1.replace(/\s/g,'')+"\""+" -> "+"\""+to1.replace(/\s/g,'')+"\""+"[label="+"\""+String(edgeno)+"("+String(percentage)+"%)\",penwidth=2, color=\"gray\" ,fontsize=50,arrowsize=2]\n"
+			    }
 		}
+         
+		}
+		text+="}"
 		// create a network
 		var container = $('#network').get(0);
 		var data = {
@@ -551,8 +586,11 @@ timer.set_interval(getText,1);
 		}
 		select.value="<%-section%>"
 		document.getElementById("k").value="<%-k%>";
+		document.getElementById("edge").value="<%- edge %>";
+
 		document.getElementById("minR").value="<%-minR%>";
-		var options = {nodes:{radiusMin:minR,radiusMax:40},stabilize: true,physics:{barnesHut: {enabled: false}, repulsion: {nodeDistance: 300, springLength: 150}}, smoothCurves: true};
+		var options = {nodes:{ scaling: {
+           min:minR,max:150}},stabilize: true,physics:{barnesHut: {enabled: false}, repulsion: {nodeDistance: 300, springLength: 150}}, smoothCurves: true};
 		network = new vis.Network(container, data, options);
 		
 		network.on("select",function(params) {
@@ -580,26 +618,15 @@ timer.set_interval(getText,1);
 			editor.setValue("", 0);
 			}
 		}
+        
+		});
+      document.getElementById("dwn-btn").addEventListener("click", function(){
+		// Generate download of hello.txt file with some content
+		
+		var filename = "graph.dot";
 
-		});
-network.on("initRedraw", function () {
-		// do something like move some custom elements?
-		});
-		network.on("afterDrawing", function (ctx) {
-			var x=0;
-			if(spt!="0"){
-			for (n in n_r ){
-			var nodeId = n;
-			var nodePosition = network.getPositions([nodeId]);
-			ctx.strokeStyle = '#A6D5F7';
-			ctx.fillStyle = '#294475';
-			if(cstudent[n]!=undefined)
-				x=Math.sqrt(cstudent[n])
-			ctx.circle(nodePosition[nodeId].x, nodePosition[nodeId].y,x);
-			ctx.fill();
-			ctx.stroke();
-		}}
-		});
+		download(filename, text);
+		}, false);
 	});
 </script>
 
@@ -634,6 +661,8 @@ network.on("initRedraw", function () {
 	</select>
 	<label style="margin-left:5px">k</label>
 	<input name="k" type="number" min="0" value="" id="k" style="margin-left:5px"/>
+	<label style="margin-left:5px">E%</label>
+	<input name="edge" type="number" min="0" value="" id="edge" style="margin-left:5px"/>
 	<label style="margin-left:5px">Min Node Size</label>
 	<input name="minR" type="number" value="" min="1" id="minR" style="margin-left:5px"/>
 	<input id="hashtest" type="hidden"/>
@@ -652,15 +681,12 @@ network.on("initRedraw", function () {
 	<label> Show student name</label>
 	<input type="checkbox" id="showname">
 	
-	<div id="slidecontainer">
-	  <label> show students progress in time</label>
-	  <input type="checkbox" id="spt">
-	  <input type="range" min="1" max="3600" value="1" class="slider" id="myRange">
-	  <label id="demo"> Show student name</label>
-	</div>
-
-	  <label> Show snapshot of Markov model in time interval </label>
-	  <input type="checkbox" id="sst">
+	
+      
+	  <label> Time Zooming PSMM  </label>
+		<input type="radio" name="sst2" value="0" id="v0">with context</input>
+		<input type="radio" name="sst2" value="1" id="v1">without context</input>
+        <input type="radio" name="sst2" value="2"id="v2" >none</input>
       <p>
          <label for = "second">Second range:</label>
          <input type = "text" id = "second" 
@@ -670,6 +696,9 @@ network.on("initRedraw", function () {
       <div id = "slider-3"></div>
       </br>
 	<button onClick="viewgraph()" style="margin-left:5px" class="btn btn-primary btn-sm">Refresh Graph</button>
+	<label> only for Download Graph, make size and color same</label>
+	<input type="checkbox" id="sizeColor">
+	<input type="button" id="dwn-btn" value="Download graph"/>
   <p id="selection"></p>
 <div id="right-div">
   <button id="run"class="btn btn-primary ">run</button>

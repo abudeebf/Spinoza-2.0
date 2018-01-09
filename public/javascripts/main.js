@@ -39,7 +39,7 @@
 //             return null;
 //  } 
 var host=window.location.origin+"/";
-
+var blindRGB=[[0,0,0],[0,73,73],[0,146,146],[255,109,182],[255,182,119],[73,0,146],[182,109,255],[109,182,255],[182,219,255],[146,0,0],[146,73,0],[36,255,36],[255,255,109]]
 function activate(pin,psid){
      if (pin== $("#accesscode").val()){
       var parameters={pin:pin,psid:psid}
@@ -77,13 +77,10 @@ function getAttendance(){
  else
  alert("start date should be less than or equal to the end date and you need to select at least one problemset");
 } 
-function engagment(pid){
-   var d1= new Date($('#datetimepicker_mask').val());
-    var range=$('#datetimepicker_mask').val().replace(" ","_").replace(":","*");
-    var re = new RegExp("/", 'g');
-    range=range.replace(re,":");
+function engagment(pid,classId){
+   
 
-    location.href=host+"getdata/"+pid+"/"+range;
+    location.href=host+"getdata/"+pid+"/"+classId;
 }
 
 function handleClickps(checkBox){
@@ -91,6 +88,9 @@ function handleClickps(checkBox){
   $.post(host+'hideShowProblemset',parameters ,function(data){
    location.reload()
   });
+}
+function downloadGraph(){
+  
 }
 function runAndTest(id1){
  var code=$('#code2').val();
@@ -151,13 +151,22 @@ function runAndTest(id1){
         
     },'json');
 }
-function convertRGB(r,g,b) {
+function convertRGB2(r,g,b) {
   var rgb= [];
   rgb = [r,g,b];
-  return '#' + rgb.map(function(x){ 
+  return '#' + rgb.map(function(x){
     return ("0" + Math.round(x*255).toString(16)).slice(-2);
   }).join('');
 };
+
+function componentToHex(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
+
+function convertRGB(r, g, b) {
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
 function countPercent(part,total){
   return ((part/total)*100).toFixed(0);
 
@@ -431,7 +440,8 @@ function viewgraph(){
   var show="true"
   var spt=0;
   var sst=0;
-  
+  var scolor="true"
+  var cob="true"
   if ($("input:radio[name=sst2]:checked").val() == "1" || $("input:radio[name=sst2]:checked").val()=="0")
     sst=$('#second').val().replace(/ /g,'')+"-"+$("input:radio[name=sst2]:checked").val();
   //if (document.getElementById('spt').checked==true)
@@ -440,8 +450,11 @@ function viewgraph(){
     errors="No"
   if (document.getElementById('showname').checked==false)
     show="false"
-  
-  location.href=host+classId+'[]'+id+'[]'+k+'[]'+minR+'[]'+section+"[]"+show+"[]"+errors+"[]"+0+"[]"+sst+"[]"+e;
+  if (document.getElementById('sizeColor').checked==false)
+    scolor="false"
+  if (document.getElementById('cob').checked==false)
+    cob="false"
+  location.href=host+classId+'[]'+id+'[]'+k+'[]'+minR+'[]'+section+"[]"+show+"[]"+errors+"[]"+0+"[]"+sst+"[]"+e+"[]"+scolor+"[]"+cob;
 }
 function shareWith(users){
   var name="shareTable";

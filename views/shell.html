@@ -15,12 +15,12 @@ margin: 0px;
 }
 div,
 textarea {
-    padding: 0px;
+    padding: 5px;
     width:98%;
     height:100%;
 }
 .codeArea {
-  padding: 0;
+  padding: 5;
   overflow: auto;
   background-color: #000000;
   color: #ffffff;
@@ -35,7 +35,7 @@ textarea {
 
 </head>
 <body id="sandbox" onload="brython(1)">
-
+<a href="javascript:void(0)" onclick="clear1()" title="clean output">clean output</a>
 <textarea id="code" class="codeArea"></textarea>
 
 <script type="text/python3">
@@ -135,7 +135,8 @@ def myKeyPress(event):
         cursorToEnd()
         event.preventDefault()
         #event.stopPropagation()
-
+def clear1():
+    doc['code'].value=""
 def myKeyDown(event):
     global _status,current
     
@@ -178,6 +179,7 @@ def myKeyDown(event):
 doc['code'].bind('keypress', myKeyPress)
 doc['code'].bind('keydown', myKeyDown)
 doc['code'].bind('click', cursorToEnd)
+doc['code'].bind('altKey',clear1)
 v = sys.implementation.version
     
 doc['code'].value = "Brython %s.%s [%s] on %s %s\n>>> " %(v[0],v[1],v[2],

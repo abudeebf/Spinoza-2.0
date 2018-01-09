@@ -35,15 +35,16 @@ block content
                   each problem , i in problems
                          tr
                             td
-                               a(href="/#{problem._id}")= "" + problem.pname
-                            td
-                               p=problem.creator
-                            td 
-                               p= problem.Description
+                               a(href="/#{problem._id}Library")= "" + problem.pname
                             td
                             
                               a(onClick='copyToPs(\"#{problem._id}\",\"#{classId}\",\"#{problemset}\")', class="btn btn-primary btn-sm")= "Add to this problem set"
                            
+                            td
+                               p=problem.creator
+                            td 
+                               p= problem.Description
+                            
 
                            
 
