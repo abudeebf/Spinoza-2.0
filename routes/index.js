@@ -128,9 +128,31 @@ passport.use(new GoogleStrategy({
     // User.findOne won't fire until we have all our data back from Google
     process.nextTick(function() {
         
-            done(null, profile);
+           usersDB.find({"email":email},function(err,docs){
+            if (err)
+                return done(err);
+            if (docs.length==0){
+                usersDB.insert({
+                    "email" : email,
+                    "name"  :name,
+                    "role"  :"student"
+                }, function (err, doc) {
+                    if (err) {
+                        // If it failed, return error
+                        console.log(err);
+                    }
+                    
+                    // If it worked, set the header so the address bar doesn't still say /adduser
+                       
+                });}
+            else if (docs.name== null || docs.name==undefined){ // in case I add a TA who did not register first
+              usersDB.update({"email":email} ,{$set:{"name":name}} ,{upsert:true});  
+            }
 
+            done(null, profile);
+});
     });}));
+
 
 // determine what data should be stored in the session
 passport.serializeUser(function(user, done) {
@@ -1075,26 +1097,7 @@ router.get('/students/:classId',isLoggedIn,isAdmin,function(req,res){
 router.get('/profile', function(req, res) {
   var email= req.user.email;
   var name= req.user.name;
-    usersDB.find({"email":email},function(err,docs){
-            if (err)
-                return done(err);
-            if (docs.length==0){
-                req.users.insert({
-                    "email" : email,
-                    "name"  :name,
-                    "role"  :"student"
-                }, function (err, doc) {
-                    if (err) {
-                        // If it failed, return error
-                        console.log(err);
-                    }
-                    
-                    // If it worked, set the header so the address bar doesn't still say /adduser
-                       
-                });}
-            else if (docs.name== null || docs.name==undefined){ // in case I add a TA who did not register first
-              usersDB.update({"email":email} ,{$set:{"name":name}} ,{upsert:true});  
-            }
+   
 
            
 
@@ -1114,7 +1117,7 @@ router.get('/profile', function(req, res) {
         });
        
     });
- });
+
  });
 router.get('/viewstudentstat/:classId/:sort/:range', isLoggedIn,isAdmin,function(req,res){
   var userCompNo={};
