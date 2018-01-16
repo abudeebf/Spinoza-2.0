@@ -6,18 +6,25 @@ var router = express.Router();
 var fs =  require('graceful-fs')
 var mongo = require('mongodb');
 var monk = require('monk');// this driver to make it easy to use mongodb
-var db = monk('129.64.46.171:27017/spinozaDBPython');
+var user="spinoza"
+var password="spinoza123"
+var db=monk(user+":"+password+"@129.64.46.171:3009/spinozaDBPython")
+
 var ObjectID = require('mongodb').ObjectID;
 //var db=  monk('129.64.46.171:27017/javaAssesmentDB');
 var passport = require('passport');
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;;
-var PROBLEMS =db.get('problems');
+var PROBLEMS ;
 var nodemailer = require("nodemailer");
 var refreshToken1="1/xCaPAvngco9eeGeVmSnxII-dzZ2AFJUrHjXy3zR57AY"
+
+var fromemail="tjhickey@brandeis.edu";
+var ccemail="abudeebf@brandeis.edu";
 // Gracehoppper
 var GOOGLE_APP_ID = '655328920221-53pk1unv4f7q67f7usvnq69ipjfntvak.apps.googleusercontent.com';
 var GOOGLE_APP_SECRET = 'zqaSSqChk8loV-bg_e7k4lSO';
-var user = db.get('User');
+var usersDB=db.get("User");
+var PROBLEMS =db.get('problems');
 var problemLibrary=db.get("problemLibrary");
 var sharedData = db.get('Shared');
 var save_problem= db.get("user_lastsave");
@@ -27,13 +34,13 @@ var classinfo=db.get("classInfo");
 var gradeOther=db.get("gradeOther");
 var debugcrowdsource=db.get("debugcrowdsource");
 var user_allSolutions= db.get('userSoultionsToProblems');
+var user_javaIDE=db.get("user_javaIdedb");
+var coursesUsers=db.get("courses_user");
+var problemset=db.get("problemset");
 var session =require('express-session');
 var arr=["float","long","short","double","int","boolean","char"];
 var numb=["float","boolean","long","short","double"];
 var formidable = require('formidable');
-var user_javaIDE=db.get("user_javaIdedb");
-var coursesUsers=db.get("courses_user");
-var problemset=db.get("problemset");
 var location1 = __dirname.substring(0,__dirname.indexOf("routes"));
 var path2 = require('path');
 var hashingExec = require('sync-exec');
@@ -120,30 +127,9 @@ passport.use(new GoogleStrategy({
     // make the code asynchronous
     // User.findOne won't fire until we have all our data back from Google
     process.nextTick(function() {
-        user.find({"email":email},function(err,docs){
-            if (err)
-                return done(err);
-            if (docs.length==0){
-                user.insert({
-                    "email" : email,
-                    "name"  :name,
-                    "role"  :"student"
-                }, function (err, doc) {
-                    if (err) {
-                        // If it failed, return error
-                        console.log(err);
-                    }
-                    
-                    // If it worked, set the header so the address bar doesn't still say /adduser
-                       
-                });}
-            else if (docs.name== null || docs.name==undefined){ // in case I add a TA who did not register first
-              user.update({"email":email} ,{$set:{"name":name}} ,{upsert:true});  
-            }
-
+        
             done(null, profile);
 
-        });
     });}));
 
 // determine what data should be stored in the session
@@ -154,7 +140,7 @@ passport.serializeUser(function(user, done) {
 // this is happen for every request
 passport.deserializeUser(function(obj, done) {
    
-    user.findOne({"email":obj._json.email}, function(err, user) {
+    usersDB.findOne({"email":obj._json.email}, function(err, user) {
        
         done(err, user);
     });
@@ -162,7 +148,7 @@ passport.deserializeUser(function(obj, done) {
 
 /* GET home page. */
  router.get('/', function(req, res) {
-
+    
     res.render('login');
  });
 router.get('/auth/google', passport.authenticate('google', { scope : ['profile', 'email'] }));
@@ -188,7 +174,7 @@ router.get('/auth/google/callback',function(req, res, next){
   })(req, res, next);
 });
 router.get('/pythonide',isLoggedIn,function(req,res){
-   user.findOne({email:req.user.email},function(e,user2){
+   usersDB.findOne({email:req.user.email},function(e,user2){
     res.render('pythonide.jade'); 
     });
   });
@@ -243,7 +229,7 @@ var noviceset=new sets.Set(novice);
      if (students[u].role !="adminteacher")
        classUsers.push(students[u].useremail);
    }
-   user.find({email:{$in:classUsers}},function(e,users2){
+   usersDB.find({email:{$in:classUsers}},function(e,users2){
      for (var us in users2){
       users[users2[us].email]=users2[us].name;
      }
@@ -300,7 +286,7 @@ router.get("/getclusterdata",isLoggedIn, function(req, res) {
      if (students[u].role !="adminteacher")
        classUsers.push(students[u].useremail);
    }
-   user.find({email:{$in:classUsers}},function(e,users2){
+   usersDB.find({email:{$in:classUsers}},function(e,users2){
      for (var us in users2){
       users[users2[us].email]=users2[us].name;
      }
@@ -393,7 +379,7 @@ router.get("/getclusterdata",isLoggedIn, function(req, res) {
 router.get("/codeshared",isLoggedIn,function(req,res){
  var usersNames={};
  var pidNames={};
-  user.find({},function(e,users){
+  usersDB.find({},function(e,users){
     for( u in users){
       usersNames[users[u].email]=users[u].name;
     }
@@ -463,7 +449,7 @@ router.get('/getattendance/:classId/:range/:id2', isLoggedIn,isAdmin, function(r
        if (students[u].role !="adminteacher")
          classUsers.push(students[u].useremail);
      }
-     user.find({email:{$in:classUsers}},function(e,users2){
+     usersDB.find({email:{$in:classUsers}},function(e,users2){
        for (var us in users2){
         users[users2[us].email]=users2[us].name;
        }
@@ -539,14 +525,14 @@ router.get('/getattendance/:classId/:range/:id2', isLoggedIn,isAdmin, function(r
 router.get('/problems/submission/:id/:useremail',isLoggedIn,function(req,res){
     var dirName=req.params.id;
     var dirPath="users/"+req.user.email+"/"+dirName;
-    user.findOne({email:req.params.useremail},function(error,student1){
+    usersDB.findOne({email:req.params.useremail},function(error,student1){
       PROBLEMS.findById((req.params.id),{},function(e,problem){
           
-          var user_submission=db.get('user_problems');
+          var user_submission=user_problems
           var prototype=problem.prtotype;
           var studentname="";
           var date="";
-          var save_problem= db.get("user_lastsave");
+          
           save_problem.findOne({"useremail":req.params.useremail,"pid": dirName} ,function (err2, doc2) {
            if(err2==null)
                {
@@ -569,7 +555,7 @@ router.get('/problems/submission/:id/:useremail',isLoggedIn,function(req,res){
               }
             }   
           
-               user.findOne({email:req.user.email},function(e,user2){
+               usersDB.findOne({email:req.user.email},function(e,user2){
               res.render('viewsubmission', {
                   title : problem.Description,result:"program result",code:prototype,test:"",id1: dirName,grader:req.user,student:req.params.useremail,studentname:studentname,date:date,classname:problem.classname,theme:user2.theme});
          });
@@ -583,7 +569,7 @@ router.get('/problems/submission/:id/:useremail',isLoggedIn,function(req,res){
 router.get('/students/:classId/:email',isLoggedIn,isAdmin,function(req,res){
      var problemsdict = {};
      var problemsetdict={}
-     user.findOne({email:req.params.email},function(e,user2){
+     usersDB.findOne({email:req.params.email},function(e,user2){
       
        PROBLEMS.find({},{sort: { _id: -1}},function (e,problems){
         problemset.find({},{sort: { _id: -1}},function(e,problemsets){
@@ -999,7 +985,7 @@ router.post("/sendemail",isLoggedIn,function(req,res){
     service: "Gmail",
     auth: {
       XOAuth2: {
-        user: "abudeebf@brandeis.ed", // Your gmail address.                                      // Not @developer.gserviceaccount.com
+        user: fromemail, // Your gmail address.                                      // Not @developer.gserviceaccount.com
         clientId: GOOGLE_APP_ID,
         clientSecret: GOOGLE_APP_SECRET,
         refreshToken: refreshToken1
@@ -1008,10 +994,10 @@ router.post("/sendemail",isLoggedIn,function(req,res){
   });
 
 var mailOptions = {
-  from: "abudeebf@brandeis.edu",
+  from: fromemail,
   bcc: req.body.selectedStudents,
   subject:req.body.selectedsubject,
-  cc:"tjhickey@brandeis.edu",
+  cc:ccemail,
   generateTextFromHTML: true,
   text: req.body.selectedMessage
 };
@@ -1032,7 +1018,7 @@ router.post("/sendabsentemail",isLoggedIn,function(req,res){
     service: "Gmail",
     auth: {
       XOAuth2: {
-        user:"abudeebf@brandeis.edu" , // Your gmail address.
+        user:fromemail , // Your gmail address.
                                               // Not @developer.gserviceaccount.com
         clientId: GOOGLE_APP_ID,
         clientSecret: GOOGLE_APP_SECRET,
@@ -1042,10 +1028,10 @@ router.post("/sendabsentemail",isLoggedIn,function(req,res){
   });
 
 var mailOptions = {
-  from: "abudeebf@brandeis.edu",
+  from: fromemail,
   bcc: req.body.absentvalue,
   subject:req.body.Absentsubject,
-  cc:"tjhickey@brandeis.edu",
+  cc:ccemail,
   generateTextFromHTML: true,
   text: req.body.AbsentMessage
 };
@@ -1077,7 +1063,7 @@ router.get('/students/:classId',isLoggedIn,isAdmin,function(req,res){
         if (students[u].role !="adminteacher")
           classUsers.push(students[u].useremail);
         }
-      user.find({email:{$in:classUsers}},function(e,users2){
+      usersDB.find({email:{$in:classUsers}},function(e,users2){
           for (var us in users2){
           users[users2[us].email]=users2[us].name;
         }
@@ -1087,7 +1073,32 @@ router.get('/students/:classId',isLoggedIn,isAdmin,function(req,res){
   });
 });
 router.get('/profile', function(req, res) {
+  var email= req.user.email;
+  var name= req.user.name;
+    usersDB.find({"email":email},function(err,docs){
+            if (err)
+                return done(err);
+            if (docs.length==0){
+                req.users.insert({
+                    "email" : email,
+                    "name"  :name,
+                    "role"  :"student"
+                }, function (err, doc) {
+                    if (err) {
+                        // If it failed, return error
+                        console.log(err);
+                    }
+                    
+                    // If it worked, set the header so the address bar doesn't still say /adduser
+                       
+                });}
+            else if (docs.name== null || docs.name==undefined){ // in case I add a TA who did not register first
+              usersDB.update({"email":email} ,{$set:{"name":name}} ,{upsert:true});  
+            }
 
+           
+
+        
     var classesPin=[];
     var admins=[];
     coursesUsers.find({"useremail":req.user.email},function(e,coursespin){
@@ -1104,7 +1115,7 @@ router.get('/profile', function(req, res) {
        
     });
  });
-
+ });
 router.get('/viewstudentstat/:classId/:sort/:range', isLoggedIn,isAdmin,function(req,res){
   var userCompNo={};
   var users={};
@@ -1144,7 +1155,7 @@ router.get('/viewstudentstat/:classId/:sort/:range', isLoggedIn,isAdmin,function
        classUsers.push(students[u].useremail);
    }
    console.log(classUsers);
-   user.find({email:{$in:classUsers}},function(e,users2){
+   usersDB.find({email:{$in:classUsers}},function(e,users2){
      for (var us in users2){
       users[users2[us].email]=users2[us].name;
      }
@@ -1282,7 +1293,7 @@ router.get('/enrolstudents/:classId',isLoggedIn,isAdmin, function(req, res) {
         if (students[u].role !="adminteacher")
           classUsers.push(students[u].useremail);
       }
-    user.find({email:{$in:classUsers}},function(e,users2){
+    usersDB.find({email:{$in:classUsers}},function(e,users2){
       for (var us in users2){
         users[users2[us].email]=users2[us].name;
       }
@@ -1307,7 +1318,7 @@ router.post("/enrolstudents",isLoggedIn, function(req, res) {
      for ( email in emails)
      { 
         var result = coursesUsers.update({"useremail":emails[email].replace(/\s/g,'')},{$set:{"role":"student",codePin:class1.classPin}},{upsert:true});
-        var result2= user.update({"email":emails[email].replace(/\s/g,'')},{$set:{"role":"student"}},{upsert:true});
+        var result2= usersDB.update({"email":emails[email].replace(/\s/g,'')},{$set:{"role":"student"}},{upsert:true});
      }
      res.redirect("/enrolstudents/"+classId)
     });
@@ -1332,14 +1343,12 @@ router.post("/unenrollstudents",isLoggedIn, function(req, res) {
 
 router.post('/addnewTA',isLoggedIn, function(req, res) {
   var emails=req.body.TAemails.split("\n");
-  var db = req.db;
-  var user=db.get('User');
   var classId=req.body.classId;
   classinfo.findById(classId,{},function(e,class1){
    for ( email in emails)
    { 
     var result = coursesUsers.update({"useremail":emails[email].replace(/\s/g,'')},{$set:{"role":"adminteacher",codePin:class1.classPin}},{upsert:true});
-    var result2 = user.update({"email":emails[email].replace(/\s/g,'')},{$set:{"role":"student"}},{upsert:true});
+    var result2 = usersDB.update({"email":emails[email].replace(/\s/g,'')},{$set:{"role":"student"}},{upsert:true});
    }
      
   
@@ -1362,7 +1371,7 @@ router.get('/addTA/:classId',isLoggedIn,isAdmin,function(req,res){
     if (students[u].role =="adminteacher")
     classUsers.push(students[u].useremail);
     }
-    user.find({email:{$in:classUsers}},function(e,users2){
+    usersDB.find({email:{$in:classUsers}},function(e,users2){
       for (var us in users2){
         users[users2[us].email]=users2[us].name;
     }
@@ -1505,8 +1514,7 @@ router.get('/classes/problems/:classId/:problemsetId',isLoggedIn, function(req, 
 router.post('/saveproblem', isLoggedIn,function (req,res)
 {   
   console.log("Iam saving");
-    var db = req.db;
-    var user_problem_save=db.get('user_lastsave');
+    var user_problem_save=save_problem
     var useremail=req.user.email;
     var pid=req.body.pid;
     var solution=req.body.sol;
@@ -1542,7 +1550,7 @@ router.get("/debugstat/:classId/:psid/:pid/:show",isLoggedIn,function (req,res){
      for (var u in students){
          classUsers.push(students[u].useremail);
      }
-     user.find({email:{$in:classUsers}},function(e,users2){
+     usersDB.find({email:{$in:classUsers}},function(e,users2){
        for (var us in users2){
         users[users2[us].email]=users2[us].name
       }
@@ -1792,7 +1800,7 @@ router.get("/getData2",isLoggedIn, function(req, res) {
      if (students[u].role !="adminteacher")
        classUsers.push(students[u].useremail);
    }
-   user.find({email:{$in:classUsers}},function(e,users2){
+   usersDB.find({email:{$in:classUsers}},function(e,users2){
      for (var us in users2){
       users[users2[us].email]=users2[us].name;
      }
@@ -1920,7 +1928,7 @@ router.get("/runtimeproblemdata",isLoggedIn,function (req,res){
      if (students[u].role !="adminteacher")
        classUsers.push(students[u].useremail);
    }
-   user.find({email:{$in:classUsers}},function(e,users2){
+   usersDB.find({email:{$in:classUsers}},function(e,users2){
      for (var us in users2){
       users[users2[us].email]=users2[us].name;
      }
@@ -1947,7 +1955,7 @@ router.get("/getproblemsdata",isLoggedIn, function(req, res) {
      if (students[u].role !="adminteacher")
        classUsers.push(students[u].useremail);
    }
-   user.find({email:{$in:classUsers}},function(e,users2){
+   usersDB.find({email:{$in:classUsers}},function(e,users2){
      for (var us in users2){
       users[users2[us].email]=users2[us].name;
      }
@@ -2397,15 +2405,15 @@ router.get("/getdata/:id/:classId",isLoggedIn, function(req, res) {
      if (students[u].role !="adminteacher")
        classUsers.push(students[u].useremail);
    }
-   user.find({email:{$in:classUsers}},function(e,users2){
+   usersDB.find({email:{$in:classUsers}},function(e,users2){
      for (var us in users2){
       users[users2[us].email]=users2[us].name;
   }
    user_allSolutions.find({pid:req.params.id,useremail:{$in: classUsers}},{sort:{time:1}},function(e,timeproblems){
    
-    firsttime=timeproblems[0].time;
-    for (var record in timeproblems){
     
+    for (var record in timeproblems){
+    firsttime=timeproblems[0].time;
     var diff=timeproblems[record].time;
     var hourD=(diff-firsttime)/36e5;
       if(hourD<=1){
@@ -2419,12 +2427,12 @@ router.get("/getdata/:id/:classId",isLoggedIn, function(req, res) {
         if (minute in minutes_finish==false)
           minutes_finish[minute]=new sets.Set();
         
-        if(timeproblems[record].useremail!="tjhickey@brandeis.edu" && timeproblems[record].useremail!="abudeebf@brandeis.edu" && solved_already.has(timeproblems[record].useremail)==false){
+        if( solved_already.has(timeproblems[record].useremail)==false){
 
            minutes_user[minute].add(timeproblems[record].useremail)
            all_solver.push(timeproblems[record].useremail);
         }
-        if(timeproblems[record].percentcorrect==100 && (timeproblems[record].useremail!="tjhickey@brandeis.edu" && timeproblems[record].useremail!="abudeebf@brandeis.edu") && solved_already.has(timeproblems[record].useremail)==false){
+        if(timeproblems[record].percentcorrect==100 && solved_already.has(timeproblems[record].useremail)==false){
           minutes_finish[minute].add(timeproblems[record].useremail);
           solved_already.add(timeproblems[record].useremail)
          }
@@ -2580,7 +2588,7 @@ router.get("/engagmentscatterplot/:classId/:pid", isLoggedIn, function(req, res)
      if (students[u].role !="adminteacher")
        classUsers.push(students[u].useremail);
    }
-   user.find({email:{$in:classUsers}},function(e,users2){
+   usersDB.find({email:{$in:classUsers}},function(e,users2){
      for (var us in users2){
       users[users2[us].email]=users2[us].name;
   }
@@ -2744,7 +2752,7 @@ router.get("/engagmentscatterplot/:classId/:pid", isLoggedIn, function(req, res)
 
 });
 router.get("/debugdata",isLoggedIn, function(req, res) {
-  debugcrowdsource.find({'pid':"58d27f13c696e60000e5c68a"},function(e,debugcomments){
+  debugcrowdsource.find({'pid':"put pid"},function(e,debugcomments){
     for (c in debugcomments){
       console.log(dateFromObjectId(debugcomments[c]._id.toString()) +","+debugcomments[c].useremail )
     }
@@ -2777,7 +2785,7 @@ router.get('/:problemId',isLoggedIn, function(req, res) {
    var db=req.db;
   var minR=problemId[3];
   var id1=problemId[1];
-  var collection =db.get('userSoultionsToProblems');
+  var collection =user_allSolutions
   var result= {};
   var k="0";
   var section="All";
@@ -2821,8 +2829,9 @@ router.get('/:problemId',isLoggedIn, function(req, res) {
 
   classinfo.findById(classId,{},function(e,cinfo){
      var restrictUsers;
-    if(cinfo.emailR!=undefined && cinfo.emailR.trim().length>0)
-       restrictUsers={useremail:{$regex :".*@"+cinfo.emailR.trim()},codePin:cinfo.classPin,role:{$ne:"adminteacher"}}
+    if(cinfo.emailR!=undefined && cinfo.emailR.trim().length>0){
+       console.log("restrictUsers")
+       restrictUsers={useremail:{$regex :".*@"+cinfo.emailR.trim()},codePin:cinfo.classPin,role:{$ne:"adminteacher"}}}
       else
        restrictUsers={codePin:cinfo.classPin,role:{$ne:"adminteacher"}} 
    coursesUsers.find(restrictUsers,{sort:{name:1}},function(e,students){
@@ -2831,7 +2840,7 @@ router.get('/:problemId',isLoggedIn, function(req, res) {
    }
    var useremails=Object.keys(users);
    var selecteduser=useremails
-   user.find({email:{$in:useremails}} ,{sort:{name:1}},function(e,students2){
+   usersDB.find({email:{$in:useremails}} ,{sort:{name:1}},function(e,students2){
     for (var u in students2){
      users[students2[u].email]=students2[u].name;
    }
@@ -3292,7 +3301,7 @@ router.get('/:problemId',isLoggedIn, function(req, res) {
       scounts=allversion.length;
       for( var u in allversion ) 
         solutions=solutions+allversion[u].solution+"&&code&&version&&^^^$#";
-      user.findOne({email:useremail},function(error,student1){
+      usersDB.findOne({email:useremail},function(error,student1){
         PROBLEMS.findById((id),{},function(e,problem){
 
             var prototype=problem.prtotype;
@@ -3627,7 +3636,7 @@ router.get("/realtimegraph/:classId/:id/:k/:minR/:section",isLoggedIn,isAdmin,fu
    var db=req.db;
   var minR=req.params.minR;
   var id1=req.params.id;
-  var collection =db.get('userSoultionsToProblems');
+  var collection =user_allSolutions
   var result= {};
   var k="0";
   var section="All";
@@ -3651,7 +3660,7 @@ router.get("/realtimegraph/:classId/:id/:k/:minR/:section",isLoggedIn,isAdmin,fu
   var fromCount={};
   var sectionvalue="";
   var users={};
-  user.find({email: {$regex : /@brandeis.edu/},role:{$ne:"adminteacher"}},{sort:{name:1}},function(e,students){
+  usersDB.find({email: {$regex : /@brandeis.edu/},role:{$ne:"adminteacher"}},{sort:{name:1}},function(e,students){
    for (var u in students){
      users[students[u].email]=students[u].name;
    }
@@ -3950,7 +3959,7 @@ router.get("/realtimegraph/:classId/:id/:k/:minR/:section",isLoggedIn,isAdmin,fu
             if ((x.split("->")[1]).trim()=="1")
               gaveup_no=gaveup_no+result[x];
         } 
-        var Problems = db.get('problems');
+        var Problems = PROBLEMS
         Problems.findById((id1),{},function(e,problem){
           res.render("realtimegraph",{scolor:scolor,scafolding:problem.scafolding,nodesName:nodesName,alises:alises,percent:percent,counthash:counthash,start_no:start_no,gaveup_no:gaveup_no,fromCount:fromCount,result:result,self_node:self_node,id1:id1,section:section,pname:problem.pname,hash_code:hash_code,k:k,user:req.user,minR:minR,hash_names:hash_names,users:users,classId:classId});
       });
@@ -4005,12 +4014,13 @@ function isLoggedIn(req, res, next) {
          console.log("finished loggein");
         return next();
       }
-
+    
    if (req.url!="http://"+req.headers.host+"/"+"saveproblem")
     // to make the user redirect to the page he wanted after log in 
     req.session.redirectUrl = req.url
     // if they aren't redirect them to the home page
     res.render('login'); // this is login page 
+
 }
 function isAdmin2(req, res, next) {
         console.log(req.body.userinfo);

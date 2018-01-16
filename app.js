@@ -8,7 +8,6 @@ var routes = require('./routes/index');
 var course= require('./routes/course');
 var mongo = require('mongodb');
 var monk = require('monk');// this driver to make it easy to use mongodb
-var db = monk('129.64.46.171:27017/spinozaDBPython');
 var app = express();
 
 
@@ -29,7 +28,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Make our db accessible to our router and it should before any route use (middleware)
 app.use(function(req,res,next){
-    req.db = db;
+    
     next();
 });
 
