@@ -725,8 +725,9 @@ router.get('/classes/problems/:id1', isLoggedIn, function(req, res) {
     var pIds=[];
     var emailR;
     classinfo.findById((classId),{},function(e,classinfom){
-      console.log(emailR);
-      if(classinfom.emailR!=undefined && classinfom.emailR.trim().length>0)
+
+      
+      if(classinfom!=undefined && classinfom.emailR!=undefined && classinfom.emailR.trim().length>0)
        emailR=classinfom.emailR.trim();
       var re2=/^\b[A-Z0-9._%-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b$/i
      
@@ -798,6 +799,7 @@ router.get('/classes/problems/:id1', isLoggedIn, function(req, res) {
             res.render('problemset', {
               "problemsetlist" : docs,unactive:unactive ,total_debug:total_debug,total_debugedproblems:total_debugedproblems,userinfo:userinfo,user:req.user,problemcompleted:pcompleted,classId:classId,classinfom:classinfom,classtimecorrect:classtimecorrect,problemscount:problemscount,classtimecount:classtimecount,problemcorrectcount:problemcorrectcount
             });
+
             });
              });
           });
@@ -809,6 +811,7 @@ router.get('/classes/problems/:id1', isLoggedIn, function(req, res) {
       
     }
 });
+
 });
 router.get("/library/:classId/:problemset",isLoggedIn,isAdmin,function(req,res){
    PROBLEMS.find({},function(e,problems){
