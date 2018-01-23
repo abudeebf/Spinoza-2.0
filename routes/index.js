@@ -6,23 +6,38 @@ var router = express.Router();
 var fs =  require('graceful-fs')
 var mongo = require('mongodb');
 var monk = require('monk');// this driver to make it easy to use mongodb
-var user="spinoza"
-var password="spinoza123"
-var db=monk(user+":"+password+"@129.64.46.171:3009/spinozaDBPython")
 
+var env = process.env.NODE_ENV || 'development';
+var config = require('./config')[env];
 var ObjectID = require('mongodb').ObjectID;
+
+var user=config.database.username
+var password=config.database.password;
+var host=config.database.host
+var datab=config.database.db
+var port=config.database.port
+console.log("hiiiiii")
+console.log(user)
+console.log(password)
+console.log(datab)
+console.log(port)
+console.log(host)
+var db=monk(user+":"+password+"@"+host+":"+port+"/"+datab)
+console.log(user+":"+password+"@"+host+":"+port+"/"+datab)
 //var db=  monk('129.64.46.171:27017/javaAssesmentDB');
 var passport = require('passport');
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;;
 var PROBLEMS ;
 var nodemailer = require("nodemailer");
-var refreshToken1="1/xCaPAvngco9eeGeVmSnxII-dzZ2AFJUrHjXy3zR57AY"
+var refreshToken1=config.nodeMailer.RefereshToken;
 
-var fromemail="tjhickey@brandeis.edu";
-var ccemail="abudeebf@brandeis.edu";
+var fromemail=config.nodeMailer.from
+var ccemail=config.nodeMailer.CC;
 // Gracehoppper
-var GOOGLE_APP_ID = '655328920221-53pk1unv4f7q67f7usvnq69ipjfntvak.apps.googleusercontent.com';
-var GOOGLE_APP_SECRET = 'zqaSSqChk8loV-bg_e7k4lSO';
+var GOOGLE_APP_ID = config.google.clientId
+var GOOGLE_APP_SECRET = config.google.Secret;
+console.log(GOOGLE_APP_ID)
+console.log(GOOGLE_APP_SECRET)
 var usersDB=db.get("User");
 var PROBLEMS =db.get('problems');
 var problemLibrary=db.get("problemLibrary");
