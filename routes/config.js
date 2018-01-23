@@ -32,7 +32,7 @@ production: {
     url: 'http://my.site.com',
     //mongodb connection settings
     database: {
-        host: '129.64.46.171',
+        host: 'ip address of the host storing the db in production',
         port: '27017',
         db:     'site'
     },
