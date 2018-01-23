@@ -5,7 +5,7 @@ development: {
     //mongodb connection settings
     database: {
         host:   ' ip address of host storing the db',
-        port:   'your poart',
+        port:   'your port',
         db:     'database name',
         password:"yourdatabasepassowrd",
         username:"yourdatabaseuser"
