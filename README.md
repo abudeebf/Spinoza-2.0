@@ -15,14 +15,13 @@ Installing Spinoza on your machine so that it runs on localhost for testing ...
 6. Visit http://localhost:3004 
 
 ## On windows:
-Create a folder "SpinozaServer"
-Install winrar https://windows10portal.com/download-winrar/
-Install the latest version 4 release of node (12/2017) at https://nodejs.org/dist/latest-v4.x/ and unzip it into the SpinozaServer Folder
-Visit https://github.com/abudeebf/Spinoza-2.0  and unzip with winrar or 7z to the SpinozaServer folder
-Open the terminal and cd to the SpinozaServer folder and then into Spinoza-2.0-master
-Start the server with
-../node*/npm start
-or
+1. Create a folder "SpinozaServer"
+2. Install winrar https://windows10portal.com/download-winrar/
+3. Install the latest version 4 release of node (12/2017) at https://nodejs.org/dist/latest-v4.x/ and unzip it into the SpinozaServer Folder
+4. Visit https://github.com/abudeebf/Spinoza-2.0  and unzip with winrar or 7z to the SpinozaServer folder
+5. Open the terminal and cd to the SpinozaServer folder and then into Spinoza-2.0-master
+6. Start the server with ../node*/npm start
+ or
 cmd /c 'C:\fullpath to the node-r.8.7-win-x64\npm.cmd'   start
 If the first doesn't work...
 Visit http://localhost:3004 
