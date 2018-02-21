@@ -31,7 +31,7 @@ Visit http://localhost:3004
  forever ../node*/npm start
  or
  pm2 ../node*/npm start
-* visit console.developer.google.com and setup Oauth2 credentials ... 
+* visit console.developer.google.com and setup Oauth2 credentials where localhost:3004 is replaced with your domain:port 
   * Authorized Javascript origins: http://localhost:3004
   * Authorized redirect URIs: http://localhost:3004/auth/google/callback
 * copy the clientID and clientSecret into the appropriates fields in routes/config.js 
