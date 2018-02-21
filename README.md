@@ -55,6 +55,7 @@ https://www.mongodb.com/download-center?_ga=2.239992771.1356982267.1516133500-13
 
 2. Then set up authentication:
 % mongo --port 3009
+
 use spinozaDBPython
 db.createUser(
     {user:"spinoza", 
@@ -64,10 +65,14 @@ db.createUser(
 )
 
 3. Then restart the mongo database with
+ 
  mongod --dbpath localdata --port 3009 --auth 
+ 
 4. Then connect to mongo with username and password to test it
- % mongo spinozaDBPython --port 3009 -u USERNAME -p PASSWORD
+
+% mongo spinozaDBPython --port 3009 -u USERNAME -p PASSWORD
  > show collections
+ 
 ** If you are able to coneect without errors you are all set!!
 
 
