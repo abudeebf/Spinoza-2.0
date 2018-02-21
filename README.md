@@ -42,6 +42,7 @@ you need to install mongodb and change the DB specification in routes/config.js 
 1. Visit mongodb page and download the community version
 
 https://www.mongodb.com/download-center?_ga=2.239992771.1356982267.1516133500-1351028849.1516133500&_gac=1.6473478.1516133500.EAIaIQobChMI-M2InaTd2AIVSDaBCh0zwwQLEAAYASAAEgJ0IPD_BwE#community
+
 2. Unzip and follow directions for installing
 ## Setting up authentication on your local copy of mongodb
 
