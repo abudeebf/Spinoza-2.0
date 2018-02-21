@@ -36,9 +36,9 @@ Visit http://localhost:3004
 
 
 
-##To use your own database 
+## To use your own database 
 you need to install mongodb and change the DB specification in routes/config.js with your own host and database infromation
-###Installing Mongodb
+### Installing Mongodb
 1. Visit mongodb page and download the community version
 https://www.mongodb.com/download-center?_ga=2.239992771.1356982267.1516133500-1351028849.1516133500&_gac=1.6473478.1516133500.EAIaIQobChMI-M2InaTd2AIVSDaBCh0zwwQLEAAYASAAEgJ0IPD_BwE#community
 2. Unzip and follow directions ..
