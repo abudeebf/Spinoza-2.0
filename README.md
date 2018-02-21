@@ -27,6 +27,7 @@ If the first doesn't work...
 Visit http://localhost:3004 
 
 ## Setting up the server to run for your students
+You may have to talk with your System Administrator to open up the ports for the Spinoza server and the MongoDB server. We use ports 3004 and 3009, but you can use any ones you choose.
 * start Spinoza-2.0 on a dedicated server (perhaps using screen or forever or pm2)
  forever ../node*/npm start
  or
