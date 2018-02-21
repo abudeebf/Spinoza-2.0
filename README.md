@@ -28,23 +28,26 @@ Visit http://localhost:3004
 
 ## Setting up the server to run for your students
 * start Spinoza-2.0 on a dedicated server (perhaps using screen or forever or pm2)
+ forever ../node*/npm start
+ or
+ pm2 ../node*/npm start
 * visit console.developer.google.com and setup Oauth2 credentials ... (EXPLAIN)
 
 
 
 
-To use your own database 
-you need to install mongodb and change the DB specification in routes/config.js EXPLANATION
-Installing Mongodb
+##To use your own database 
+you need to install mongodb and change the DB specification in routes/config.js with your own host and database infromation
+###Installing Mongodb
 1. Visit mongodb page and download the community version
 https://www.mongodb.com/download-center?_ga=2.239992771.1356982267.1516133500-1351028849.1516133500&_gac=1.6473478.1516133500.EAIaIQobChMI-M2InaTd2AIVSDaBCh0zwwQLEAAYASAAEgJ0IPD_BwE#community
 2. Unzip and follow directions ..
 Setting up authentication on your local copy of mongodb
 
-Start the mongodb in a separate window
+3. Start the mongodb in a separate window
 % mongod --port 3009 --dbpath/ localdata
 
-Then set up authentication:
+4. Then set up authentication:
 % mongo --port 3009
 use spinozaDBPython
 db.createUser(
@@ -54,12 +57,12 @@ db.createUser(
     }
 )
 
-Then restart the mongo database with
-mongod --dbpath localdata --port 3009 --auth 
-Then connect to mongo with username and password to test it
-% mongo spinozaDBPython --port 3009 -u USERNAME -p PASSWORD
-> show collections
-.....
+5. Then restart the mongo database with
+ mongod --dbpath localdata --port 3009 --auth 
+6. Then connect to mongo with username and password to test it
+ % mongo spinozaDBPython --port 3009 -u USERNAME -p PASSWORD
+ > show collections
+** If you are able to coneect without errors you are all set!!
 
 
 
