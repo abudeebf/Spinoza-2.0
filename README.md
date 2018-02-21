@@ -6,7 +6,7 @@ Spinoza 2.0 is python online IDE that allow the instructor to post programming q
 
 Installing Spinoza on your machine so that it runs on localhost for testing ...
 
-On Mac:
+# On Mac:
 Create a folder "SpinozaServer"
 Install the latest version 4 release of node (12/2017) at https://nodejs.org/dist/latest-v4.x/ and unzip it into the SpinozaServer Folder
 Visit https://github.com/abudeebf/Spinoza-2.0  and unzip to the SpinozaServer folder
@@ -15,7 +15,7 @@ Start the server with
 ../node*/bin/npm start
 Visit http://localhost:3004 
 
- On windows:
+# On windows:
 Create a folder "SpinozaServer"
 Install winrar https://windows10portal.com/download-winrar/
 Install the latest version 4 release of node (12/2017) at https://nodejs.org/dist/latest-v4.x/ and unzip it into the SpinozaServer Folder
@@ -28,10 +28,10 @@ cmd /c 'C:\fullpath to the node-r.8.7-win-x64\npm.cmd'   start
 If the first doesn't work...
 Visit http://localhost:3004 
 
-Setting up the server to run for your students
+# Setting up the server to run for your students
 * start Spinoza-2.0 on a dedicated server (perhaps using screen or forever or pm2)
 * visit console.developer.google.com and setup Oauth2 credentials ... (EXPLAIN)
-done!
+
 
 
 
