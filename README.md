@@ -11,6 +11,7 @@ Installing Spinoza on your machine so that it runs on localhost for testing ...
 2. Install the latest version 4 release of node (12/2017) at https://nodejs.org/dist/latest-v4.x/ and unzip it into the SpinozaServer Folder
 3. Visit https://github.com/abudeebf/Spinoza-2.0  and unzip to the SpinozaServer folder
 4. Open the terminal and cd to the SpinozaServer folder and then into Spinoza-2.0-master
+1. Update the routers/config.js file to have the correct info for the database server and your server ...
 5. Start the server with ../node*/bin/npm start
 6. Visit http://localhost:3004 
 
@@ -20,6 +21,7 @@ Installing Spinoza on your machine so that it runs on localhost for testing ...
 3. Install the latest version 4 release of node (12/2017) at https://nodejs.org/dist/latest-v4.x/ and unzip it into the SpinozaServer Folder
 4. Visit https://github.com/abudeebf/Spinoza-2.0  and unzip with winrar or 7z to the SpinozaServer folder
 5. Open the terminal and cd to the SpinozaServer folder and then into Spinoza-2.0-master
+1. Update the routers/config.js file to have the correct info for the database server and your server ...
 6. Start the server with ../node*/npm start
  or
 cmd /c 'C:\fullpath to the node-r.8.7-win-x64\npm.cmd'   start
