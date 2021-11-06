@@ -1,0 +1,18 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Spinoz
+message: Please cite this dataset using these metadata.
+type: software
+authors:
+  - given-names: Fatima
+    family-names: Abu deeb
+    email: deebf@ksau-hs.edu.sa
+    affiliation: Ksau-hs
+    orcid: 'https://orcid.org/0000-0001-8518-9938'
+  - given-names: Timothy
+    family-names: Hickey
+    email: tjhickey@brandeis.edu
+    affiliation: Brandeis university
+    orcid: 'https://orcid.org/0000-0002-4583-686X'
